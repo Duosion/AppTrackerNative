@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">App Tracker</string>
+    <string name="apps_nav_bar_button_name">Apps</string>
+    <string name="more_nav_bar_button_name">More</string>
+    <string name="back_button_description">Go Back</string>
+    <string name="search_textfield_placeholder">Search…</string>
+</resources>
