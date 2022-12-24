@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,8 +26,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.apptracker.R
@@ -38,9 +43,9 @@ fun AddAppsPage(
     navController: NavController,
     viewModel: AppsViewModel = AppsViewModel( LocalContext.current.packageManager )
 ) {
-    val installedApps = viewModel.getApps()
     val focusRequester = remember { FocusRequester() }
 
+    var installedApps by remember { mutableStateOf(viewModel.getApps()) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearchFocused by remember { mutableStateOf(false) }
 
@@ -53,6 +58,13 @@ fun AddAppsPage(
     fun collapseSearch() {
         isSearchFocused = false
         searchQuery = "" // reset query
+        viewModel.setQueryString("")
+        installedApps = viewModel.getApps()
+    }
+
+    fun search() {
+        viewModel.setQueryString(searchQuery)
+        installedApps = viewModel.getApps()
     }
 
     Scaffold(
@@ -64,10 +76,13 @@ fun AddAppsPage(
                         BackHandler() {
                             collapseSearch()
                         }
+                        val focusManager = LocalFocusManager.current
                         TextField(
                             modifier = Modifier
                                 .onFocusChanged { state ->
-                                    isSearchFocused = state.isFocused
+                                    if (state.isFocused) {
+                                        isSearchFocused = true
+                                    }
                                 }
                                 .focusRequester(focusRequester),
                             value = searchQuery, 
@@ -80,6 +95,15 @@ fun AddAppsPage(
                                 focusedIndicatorColor = transparent,
                                 unfocusedIndicatorColor = transparent,
                                 containerColor = transparent
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    focusManager.clearFocus()
+                                    search()
+                                }
                             )
                         )
                     } else {
@@ -124,26 +148,8 @@ fun AddAppsPage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            /*var searchQuery by remember { mutableStateOf("") }
-            var isFocused by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                modifier = Modifier
-                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                    .fillMaxWidth()
-                    .onFocusChanged { state ->
-                        isFocused = state.isFocused
-                    },
-                value = searchQuery,
-                placeholder = {
-                    Text(stringResource(id = R.string.search_textfield_placeholder))
-                },
-                onValueChange = { text ->
-                    searchQuery = text
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(50.dp)
-            )*/
-            if (installedApps.isEmpty()) {
+            Divider()
+            if (viewModel.isFiltering) {
                 CircularProgressIndicator()
             } else {
                 LazyColumn(
@@ -151,7 +157,7 @@ fun AddAppsPage(
                 ) {
                     items(installedApps) { info ->
                         val label = info.loadLabel(packageManager).toString()
-                        if (searchQuery == "" || label.contains(other = searchQuery, ignoreCase = true)) {
+                        //if (searchQuery == "" || label.contains(other = searchQuery, ignoreCase = true)) {
                             AddAppListEntry(
                                 appInfo = info,
                                 packageManager = packageManager,
@@ -160,7 +166,7 @@ fun AddAppsPage(
 
                                 }
                             )
-                        }
+                        //}
                     }
                 }
             }
@@ -185,6 +191,9 @@ fun AddAppListEntry(
             modifier = Modifier.fillMaxSize(),
             headlineText = {
                 Text(label)
+            },
+            supportingText = {
+                Text(appInfo.packageName)
             },
             leadingContent = {
                 Image(

@@ -25,16 +25,17 @@ fun MorePage(
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .padding(top = padding.calculateTopPadding())
                 //.systemBarsPadding()
                 .fillMaxSize()
         ) {
+            Divider()
             val listItems = listOf(
                 MoreListItem.AddApps
             )
-
             listItems.forEach { listItem ->
                 MostListEntry(
                     navController = navController,
@@ -60,9 +61,9 @@ fun MostListEntry(
         shape = RoundedCornerShape(20.dp),
         onClick = {
             navController.navigate(listItem.route) {
-                popUpTo(navController.graph.findStartDestination().id) {
+                /*popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
-                }
+                }*/
                 launchSingleTop = true
                 restoreState = true
             }

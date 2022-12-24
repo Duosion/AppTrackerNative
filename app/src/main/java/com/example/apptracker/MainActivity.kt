@@ -11,14 +11,9 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -98,7 +93,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberAnimatedNavController()
 
                 val bottomBarState = remember { mutableStateOf(false) }
-
                 Scaffold(
                     bottomBar = {
                         BottomBar(
