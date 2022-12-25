@@ -1,4 +1,4 @@
-package com.example.apptracker.navigation
+package com.example.apptracker.util.navigation
 
 import androidx.compose.ui.res.stringResource
 import com.example.apptracker.R

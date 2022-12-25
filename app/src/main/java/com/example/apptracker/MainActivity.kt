@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -22,12 +23,14 @@ import androidx.core.view.ViewCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.apptracker.navigation.MainNavItem
-import com.example.apptracker.navigation.MoreListItem
-import com.example.apptracker.routes.AddAppsPage
-import com.example.apptracker.routes.AppsPage
-import com.example.apptracker.routes.MorePage
+import com.example.apptracker.util.navigation.MainNavItem
+import com.example.apptracker.util.navigation.MoreListItem
+import com.example.apptracker.ui.routes.AddAppsPage
+import com.example.apptracker.ui.routes.AppsPage
+import com.example.apptracker.ui.routes.MorePage
+import com.example.apptracker.ui.routes.settings.SettingsPage
 import com.example.apptracker.ui.theme.AppTrackerTheme
+import com.example.apptracker.util.apps.AppsViewModelV2
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -91,7 +94,6 @@ class MainActivity : ComponentActivity() {
                 val fadeOutTransition = fadeOut(animationSpec = tween(durationMillis = transitionTweenTime))
 
                 val navController = rememberAnimatedNavController()
-
                 val bottomBarState = remember { mutableStateOf(false) }
                 Scaffold(
                     bottomBar = {
@@ -134,6 +136,15 @@ class MainActivity : ComponentActivity() {
                                 }
                                 setSystemBarsAppearance()
                                 AddAppsPage(
+                                    navController = navController
+                                )
+                            }
+                            composable(MoreListItem.Settings.route) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+                                setSystemBarsAppearance()
+                                SettingsPage(
                                     navController = navController
                                 )
                             }
