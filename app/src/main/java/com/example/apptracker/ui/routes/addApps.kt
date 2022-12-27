@@ -30,22 +30,14 @@ fun AddAppsPage(
     navController: NavController,
     viewModel: AppsViewModelV2 = AppsViewModelV2( LocalContext.current.packageManager)
 ) {
-    var screenState by remember { mutableStateOf(viewModel.state) }
-    var queryState by remember { mutableStateOf(viewModel.queryState) }
-
-    fun refreshStates() {
-        screenState = viewModel.state
-        queryState = viewModel.queryState
-    }
+    val screenState by viewModel.state.collectAsState()
 
     fun search(query: String) {
         viewModel.setQueryString(query)
-        refreshStates()
     }
 
     fun sort(sortMode: SortFunction) {
         viewModel.setSortMode(sortMode)
-        refreshStates()
     }
 
     Scaffold(
@@ -79,31 +71,32 @@ fun AddAppsPage(
             verticalArrangement = Arrangement.Center
         ) {
             Divider()
-            screenState.value.apps?.let {
-                val sortMode = queryState.value.sortMode
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(it) { info ->
-                        val label = info.loadLabel(packageManager).toString()
-                        AddAppListEntry(
-                            appInfo = info,
-                            packageManager = packageManager,
-                            label = label,
-                            sortMode = sortMode,
-                            onClick = {
-
-                            }
-                        )
-                    }
-                }
-            }
-            if (screenState.value.isLoading) {
+            if (screenState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
+                }
+            } else {
+                screenState.apps?.let {
+                    val sortMode = screenState.queryState.sortMode
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(it) { info ->
+                            val label = info.loadLabel(packageManager).toString()
+                            AddAppListEntry(
+                                appInfo = info,
+                                packageManager = packageManager,
+                                label = label,
+                                sortMode = sortMode,
+                                onClick = {
+
+                                }
+                            )
+                        }
+                    }
                 }
             }
 

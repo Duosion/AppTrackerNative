@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,20 +27,25 @@ import com.example.apptracker.util.navigation.MoreListItem
 import com.example.apptracker.ui.routes.AddAppsPage
 import com.example.apptracker.ui.routes.AppsPage
 import com.example.apptracker.ui.routes.MorePage
+import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
 import com.example.apptracker.ui.routes.settings.SettingsPage
+import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
 import com.example.apptracker.ui.theme.AppTrackerTheme
-import com.example.apptracker.util.apps.AppsViewModelV2
+import com.example.apptracker.util.data.getDatabase
+import com.example.apptracker.util.data.settings.Setting
+import com.example.apptracker.util.data.settings.values.DarkModeValues
+import com.example.apptracker.util.navigation.SettingsListItem
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
-        ExperimentalLayoutApi::class
-    )
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
+            val appDatabase = getDatabase(applicationContext)
 
             val isDarkTheme = isSystemInDarkTheme()
             val view = LocalView.current
@@ -88,7 +92,12 @@ class MainActivity : ComponentActivity() {
 
             setSystemBarsAppearance()
 
-            AppTrackerTheme {
+            val appearanceViewModel = AppearanceViewModel(appDatabase)
+
+            AppTrackerTheme(
+                database = appDatabase,
+                viewModel = appearanceViewModel
+            ) {
                 val transitionTweenTime = 350 // the transition tween time in ms
                 val fadeInTransition = fadeIn(animationSpec = tween(durationMillis = transitionTweenTime))
                 val fadeOutTransition = fadeOut(animationSpec = tween(durationMillis = transitionTweenTime))
@@ -116,7 +125,7 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
-                                setSystemBarsAppearance()
+                                //setSystemBarsAppearance()
                                 AppsPage(
                                     navController = navController
                                 )
@@ -125,7 +134,7 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
-                                setSystemBarsAppearance()
+                                //setSystemBarsAppearance()
                                 MorePage(
                                     navController = navController
                                 )
@@ -134,7 +143,7 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
-                                setSystemBarsAppearance()
+                                //setSystemBarsAppearance()
                                 AddAppsPage(
                                     navController = navController
                                 )
@@ -143,9 +152,20 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
-                                setSystemBarsAppearance()
+                                //setSystemBarsAppearance()
                                 SettingsPage(
                                     navController = navController
+                                )
+                            }
+                            composable(SettingsListItem.Appearance.route) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+                                //setSystemBarsAppearance()
+                                AppearancePage(
+                                    navController = navController,
+                                    database = appDatabase,
+                                    viewModel = appearanceViewModel
                                 )
                             }
                         }
@@ -193,12 +213,5 @@ fun BottomBar(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    AppTrackerTheme {
     }
 }
