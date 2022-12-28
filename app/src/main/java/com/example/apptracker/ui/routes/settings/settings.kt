@@ -69,7 +69,11 @@ fun SettingsListEntry(
     SettingsListItemCard(
         headlineText = { Text(stringResource(id = headline)) },
         supportingText = { Text(stringResource(id = listItem.supporting)) },
-        leadingContent = { Icon(painter = painterResource(id = listItem.icon), contentDescription = stringResource(headline)) },
+        leadingContent = { Icon(
+            painter = painterResource(id = listItem.icon),
+            contentDescription = stringResource(headline),
+            tint = MaterialTheme.colorScheme.primary
+        )},
         onClick = {
             navController.navigate(listItem.route) {
                 /*popUpTo(navController.graph.findStartDestination().id) {

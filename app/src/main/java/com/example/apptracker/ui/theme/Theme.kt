@@ -3,13 +3,11 @@ package com.example.apptracker.ui.theme
 import android.app.Activity
 import android.os.Build
 import android.view.View
+import android.view.WindowInsets.Side
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -42,6 +40,7 @@ import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.settings.values.DarkModeValues
 import com.example.apptracker.util.data.settings.values.OledModeValues
 import com.example.apptracker.util.data.settings.values.ThemeValues
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val OledDarkColorScheme = darkColorScheme(
     background = Color(0xFF000000),
@@ -83,35 +82,17 @@ fun AppTrackerTheme(
         colorScheme = colorScheme.copy(background = OledDarkColorScheme.background, surface = OledDarkColorScheme.surface)
     }
 
-    val view = LocalView.current
-    val window = (view.context as Activity).window
-    if (!view.isInEditMode) {
-        SideEffect {
-            window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = Color.Transparent.toArgb()
-
-            if (Build.VERSION.SDK_INT >= 30) {
-                val insetsController = window.insetsController
-                window.setDecorFitsSystemWindows(false)
-                // status bar
-                insetsController?.setSystemBarsAppearance(
-                    if (darkTheme) 0 else WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-                )
-                // nav
-                insetsController?.setSystemBarsAppearance(
-                    if (darkTheme) 0 else WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-                )
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = darkTheme
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
-            }
-        }
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = !darkTheme,
+        )
+        systemUiController.setNavigationBarColor(
+            color = Color.Transparent,
+            darkIcons = !darkTheme,
+            navigationBarContrastEnforced = false
+        )
     }
 
     MaterialTheme(

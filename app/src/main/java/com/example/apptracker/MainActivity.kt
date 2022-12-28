@@ -18,7 +18,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -42,55 +44,11 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setContent {
 
             val appDatabase = getDatabase(applicationContext)
-
-            val isDarkTheme = isSystemInDarkTheme()
-            val view = LocalView.current
-
-            fun setSystemBarsAppearance(
-                darkStatusBar: Boolean? = !isDarkTheme,
-                darkNavigationBar: Boolean? = !isDarkTheme
-            ) {
-                // changes the system bars appearance depending on the passed variables
-                if (Build.VERSION.SDK_INT >= 30) {
-                    val insetsController = window.insetsController
-                    window.setDecorFitsSystemWindows(false)
-                    if (!darkStatusBar!!) {
-                        insetsController?.setSystemBarsAppearance(
-                            0,
-                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                        )
-                    } else {
-                        insetsController?.setSystemBarsAppearance(
-                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-                        )
-                    }
-                    if (!darkNavigationBar!!) {
-                        insetsController?.setSystemBarsAppearance(
-                            0,
-                            WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-                        )
-                    } else {
-                        insetsController?.setSystemBarsAppearance(
-                            WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                            WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-                        )
-                    }
-                } else {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                    window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-
-                    ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = darkNavigationBar!!
-                    ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkStatusBar!!
-                }
-            }
-
-            setSystemBarsAppearance()
 
             val appearanceViewModel = AppearanceViewModel(appDatabase)
 
@@ -191,7 +149,9 @@ fun BottomBar(
         enter = slideInVertically { it },
         exit = slideOutVertically { it }
     ) {
-        NavigationBar {
+        NavigationBar(
+            //tonalElevation = 1.dp
+        ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
