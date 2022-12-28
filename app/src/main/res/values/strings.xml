@@ -6,5 +6,6 @@
     <string name="search_textfield_placeholder">Search…</string>
     <string name="search_sort_placeholder">Sort</string>
     <string name="search_sort_dialog_text">Sort by</string>
-    <string name="more_settings_button_supporting">App settings.</string>
+    <string name="more_settings_button_supporting">Change the app\'s functionality.</string>
+    <string name="text_field_empty_content_error">Text field is empty.</string>
 </resources>

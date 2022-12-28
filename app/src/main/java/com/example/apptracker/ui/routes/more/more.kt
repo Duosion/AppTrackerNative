@@ -1,4 +1,4 @@
-package com.example.apptracker.ui.routes
+package com.example.apptracker.ui.routes.more
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +34,7 @@ fun MorePage(
             Divider()
             val listItems = listOf(
                 MoreListItem.AddApps,
+                MoreListItem.Categories,
                 MoreListItem.Settings
             )
             listItems.forEach { listItem ->
@@ -60,7 +61,7 @@ fun MostListEntry(
             .fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         onClick = {
-            navController.navigate(listItem.route) {
+            navController.navigate(listItem.route.path) {
                 /*popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }*/

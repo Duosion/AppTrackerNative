@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
-val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-
 class SettingsRepository(
     private val dao: SettingsDao
 ) {

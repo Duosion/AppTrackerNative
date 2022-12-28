@@ -75,7 +75,7 @@ fun SettingsListEntry(
             tint = MaterialTheme.colorScheme.primary
         )},
         onClick = {
-            navController.navigate(listItem.route) {
+            navController.navigate(listItem.route.path) {
                 /*popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }*/

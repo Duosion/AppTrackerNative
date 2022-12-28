@@ -2,4 +2,6 @@
 <resources>
     <string name="more_add_app_button_headline">Add App</string>
     <string name="more_add_app_button_supporting">Add an app to be tracked.</string>
+    <string name="more_category_button_headline">Categories</string>
+    <string name="more_category_button_supporting">Arrange apps into categories.</string>
 </resources>

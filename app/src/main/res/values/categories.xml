@@ -1,0 +1,28 @@
+<resources>
+    <string name="categories_fab_text">New</string>
+    <string name="categories_default_category_name">Default</string>
+    <string name="categories_fab_content_description">New Category</string>
+    <string name="categories_move_up_button_content_description">Move Up</string>
+    <string name="categories_move_down_button_content_description">Move Down</string>
+    <string name="categories_edit_button_content_description">Edit Category</string>
+    <string name="categories_delete_button_content_description">Delete Category</string>
+    <string name="categories_empty_list_text">Add a category to begin.</string>
+
+    <string name="categories_add_dialog_title">Add category</string>
+    <string name="categories_add_dialog_confirm">Add</string>
+    <string name="categories_add_dialog_dismiss">Cancel</string>
+    <string name="categories_add_dialog_label">Name</string>
+    <string name="categories_add_dialog_placeholder">Category Name</string>
+
+    <string name="categories_edit_dialog_title">Edit name</string>
+    <string name="categories_edit_dialog_confirm">OK</string>
+    <string name="categories_edit_dialog_dismiss">Cancel</string>
+    <string name="categories_edit_dialog_label">Name</string>
+    <string name="categories_edit_dialog_placeholder">Category Name</string>
+
+    <string name="categories_delete_confirm_dialog_title">Delete category</string>
+    <string name="categories_delete_confirm_dialog_confirm">OK</string>
+    <string name="categories_delete_confirm_dialog_dismiss">Cancel</string>
+    <string name="categories_delete_confirm_dialog_content">Are you sure that you want to delete the category \'%s\'?</string>
+
+</resources>

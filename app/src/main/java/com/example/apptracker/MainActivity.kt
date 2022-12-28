@@ -1,42 +1,31 @@
 package com.example.apptracker
 
-import android.os.Build
 import android.os.Bundle
-import android.view.View
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.apptracker.util.navigation.MainNavItem
-import com.example.apptracker.util.navigation.MoreListItem
-import com.example.apptracker.ui.routes.AddAppsPage
+import com.example.apptracker.ui.routes.more.AddAppsPage
 import com.example.apptracker.ui.routes.AppsPage
-import com.example.apptracker.ui.routes.MorePage
+import com.example.apptracker.ui.routes.more.categories.CategoriesPage
+import com.example.apptracker.ui.routes.more.MorePage
 import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
 import com.example.apptracker.ui.routes.settings.SettingsPage
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
 import com.example.apptracker.ui.theme.AppTrackerTheme
 import com.example.apptracker.util.data.getDatabase
-import com.example.apptracker.util.data.settings.Setting
-import com.example.apptracker.util.data.settings.values.DarkModeValues
-import com.example.apptracker.util.navigation.SettingsListItem
+import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -73,13 +62,13 @@ class MainActivity : ComponentActivity() {
                         AnimatedNavHost(
                             modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                             navController = navController,
-                            startDestination = MainNavItem.Apps.route,
+                            startDestination = Route.Apps.path,
                             enterTransition = { fadeInTransition },
                             popEnterTransition = { fadeInTransition },
                             exitTransition = { fadeOutTransition },
                             popExitTransition = { fadeOutTransition },
                         ) {
-                            composable(MainNavItem.Apps.route) {
+                            composable(Route.Apps.path) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
@@ -88,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
-                            composable(MainNavItem.More.route) {
+                            composable(Route.More.path) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
@@ -97,7 +86,7 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
-                            composable(MoreListItem.AddApps.route) {
+                            composable(Route.AddApps.path) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -106,7 +95,7 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
-                            composable(MoreListItem.Settings.route) {
+                            composable(Route.Settings.path) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -115,7 +104,16 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
-                            composable(SettingsListItem.Appearance.route) {
+                            composable(Route.Categories.path) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+                                CategoriesPage(
+                                    navController = navController,
+                                    database = appDatabase
+                                )
+                            }
+                            composable(Route.Appearance.path) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -160,9 +158,9 @@ fun BottomBar(
                 NavigationBarItem(
                     icon = { Icon(painter = painterResource(id = navItem.icon), contentDescription = itemName) },
                     label = { Text(itemName) },
-                    selected = currentRoute == navItem.route,
+                    selected = currentRoute == navItem.route.path,
                     onClick = {
-                        navController.navigate(navItem.route) {
+                        navController.navigate(navItem.route.path) {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
