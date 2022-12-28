@@ -10,8 +10,8 @@ enum class OledModeValues(override val id: Int, override val valueName: Int) : I
     companion object {
         fun fromId (id: Int): OledModeValues {
             return when(id) {
-                0 -> OledModeValues.OFF
-                else -> OledModeValues.ON
+                0 -> OFF
+                else -> ON
             }
         }
     }

@@ -6,8 +6,8 @@ import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.settings.Setting
 import com.example.apptracker.util.data.settings.SettingsRepository
 import com.example.apptracker.util.data.settings.values.DarkModeValues
-import com.example.apptracker.util.data.settings.values.DynamicColorModeValues
 import com.example.apptracker.util.data.settings.values.OledModeValues
+import com.example.apptracker.util.data.settings.values.ThemeValues
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,7 +32,7 @@ class AppearanceViewModel (
             _screenState.value = AppearanceScreenState(
                 darkModeValue = DarkModeValues.fromId(settingsRepository.getSetting(Setting.DarkMode)),
                 oledModeValue = OledModeValues.fromId(settingsRepository.getSetting(Setting.OledMode)),
-                dynamicColorModeValue = DynamicColorModeValues.fromId(settingsRepository.getSetting(Setting.DynamicColorMode))
+                themeValue = ThemeValues.fromId(settingsRepository.getSetting(Setting.Theme))
             )
         }
     }
@@ -57,11 +57,11 @@ class AppearanceViewModel (
         setSetting(Setting.OledMode, id)
     }
 
-    fun setDynamicColorModeValue(id: Int) {
+    fun setThemeValue(id: Int) {
         _screenState.update { currentState ->
-            currentState.copy(dynamicColorModeValue = DynamicColorModeValues.fromId(id))
+            currentState.copy(themeValue = ThemeValues.fromId(id))
         }
-        setSetting(Setting.DynamicColorMode, id)
+        setSetting(Setting.Theme, id)
     }
 
 

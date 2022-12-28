@@ -1,47 +1,47 @@
 package com.example.apptracker.ui.theme
 
 import android.app.Activity
-import android.content.res.Resources.Theme
 import android.os.Build
 import android.view.View
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
+import com.example.apptracker.ui.theme.greenapple.darkGreenAppleColorScheme
+import com.example.apptracker.ui.theme.greenapple.lightGreenAppleColorScheme
+import com.example.apptracker.ui.theme.lavender.darkLavenderColorScheme
+import com.example.apptracker.ui.theme.lavender.lightLavenderColorScheme
+import com.example.apptracker.ui.theme.midnightdusk.darkMidnightDuskColorScheme
+import com.example.apptracker.ui.theme.midnightdusk.lightMidnightDuskColorScheme
+import com.example.apptracker.ui.theme.strawberry.darkStrawberryColorScheme
+import com.example.apptracker.ui.theme.strawberry.lightStrawberryColorScheme
+import com.example.apptracker.ui.theme.tako.darkTakoColorScheme
+import com.example.apptracker.ui.theme.tako.lightTakoColorScheme
+import com.example.apptracker.ui.theme.tealturquoise.darkTealTurquoiseColorScheme
+import com.example.apptracker.ui.theme.tealturquoise.lightTealTurquoiseColorScheme
+import com.example.apptracker.ui.theme.tidalwave.darkTidalWaveColorScheme
+import com.example.apptracker.ui.theme.tidalwave.lightTidalWaveColorScheme
+import com.example.apptracker.ui.theme.yinyang.darkYinYangColorScheme
+import com.example.apptracker.ui.theme.yinyang.lightYinYangColorScheme
+import com.example.apptracker.ui.theme.yotsuba.darkYotsubaColorScheme
+import com.example.apptracker.ui.theme.yotsuba.lightYotsubaColorScheme
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.settings.values.DarkModeValues
-import com.example.apptracker.util.data.settings.values.DynamicColorModeValues
 import com.example.apptracker.util.data.settings.values.OledModeValues
-
-private val DarkColorScheme = darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40
-
-        /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
+import com.example.apptracker.util.data.settings.values.ThemeValues
 
 private val OledDarkColorScheme = darkColorScheme(
     background = Color(0xFF000000),
@@ -63,24 +63,25 @@ fun AppTrackerTheme(
         DarkModeValues.DEFAULT -> isSystemInDarkTheme()
     }
 
-    val dynamicColor = when(state.dynamicColorModeValue) {
-        DynamicColorModeValues.OFF -> false
-        DynamicColorModeValues.ON -> true
-    }
-
-    var colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+    var colorScheme = when(state.themeValue) {
+        ThemeValues.DYNAMIC -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        ThemeValues.GREENAPPLE -> if (darkTheme) darkGreenAppleColorScheme else lightGreenAppleColorScheme
+        ThemeValues.LAVENDER -> if (darkTheme) darkLavenderColorScheme else lightLavenderColorScheme
+        ThemeValues.MIDNIGHTDUSK -> if (darkTheme) darkMidnightDuskColorScheme else lightMidnightDuskColorScheme
+        ThemeValues.STRAWBERRY -> if (darkTheme) darkStrawberryColorScheme else lightStrawberryColorScheme
+        ThemeValues.TAKO -> if (darkTheme) darkTakoColorScheme else lightTakoColorScheme
+        ThemeValues.TEALTURQUOISE -> if (darkTheme) darkTealTurquoiseColorScheme else lightTealTurquoiseColorScheme
+        ThemeValues.TIDALWAVE -> if (darkTheme) darkTidalWaveColorScheme else lightTidalWaveColorScheme
+        ThemeValues.YINYANG -> if (darkTheme) darkYinYangColorScheme else lightYinYangColorScheme
+        ThemeValues.YOTSUBA -> if (darkTheme) darkYotsubaColorScheme else lightYotsubaColorScheme
     }
 
     if (darkTheme && state.oledModeValue == OledModeValues.ON) {
         colorScheme = colorScheme.copy(background = OledDarkColorScheme.background, surface = OledDarkColorScheme.surface)
     }
-
 
     val view = LocalView.current
     val window = (view.context as Activity).window
@@ -112,6 +113,7 @@ fun AppTrackerTheme(
             }
         }
     }
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
