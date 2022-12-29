@@ -1,8 +1,13 @@
 package com.example.apptracker
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
@@ -18,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.apptracker.util.navigation.MainNavItem
 import com.example.apptracker.ui.routes.more.AddAppsPage
 import com.example.apptracker.ui.routes.AppsPage
+import com.example.apptracker.ui.routes.PackageUsagePermissionPage
 import com.example.apptracker.ui.routes.more.categories.CategoriesPage
 import com.example.apptracker.ui.routes.more.MorePage
 import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
@@ -26,17 +32,44 @@ import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
 import com.example.apptracker.ui.theme.AppTrackerTheme
 import com.example.apptracker.util.data.getDatabase
 import com.example.apptracker.util.navigation.Route
+import com.example.apptracker.util.permissions.isPackageUsagePermissionAccessGranted
+import com.example.apptracker.util.permissions.tryNotificationPermissionAccess
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 class MainActivity : ComponentActivity() {
+
+
+    private fun registerNotificationChannel() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            val name = getString(R.string.notification_channel_name)
+            val desc = getString(R.string.notification_channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(getString(R.string.notification_channel_id), name, importance).apply {
+                description = desc
+            }
+            // register
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun tryPermissions() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+            val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+            // notification permission
+            tryNotificationPermissionAccess(applicationContext, requestPermissionLauncher)
+        }
+    }
+
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        tryPermissions()
+        registerNotificationChannel()
         super.onCreate(savedInstanceState)
         setContent {
-
             val appDatabase = getDatabase(applicationContext)
 
             val appearanceViewModel = AppearanceViewModel(appDatabase)
@@ -45,12 +78,16 @@ class MainActivity : ComponentActivity() {
                 database = appDatabase,
                 viewModel = appearanceViewModel
             ) {
+
+                val packageUsagePermissionGranted = isPackageUsagePermissionAccessGranted(applicationContext)
+
                 val transitionTweenTime = 350 // the transition tween time in ms
                 val fadeInTransition = fadeIn(animationSpec = tween(durationMillis = transitionTweenTime))
                 val fadeOutTransition = fadeOut(animationSpec = tween(durationMillis = transitionTweenTime))
 
                 val navController = rememberAnimatedNavController()
                 val bottomBarState = remember { mutableStateOf(false) }
+
                 Scaffold(
                     bottomBar = {
                         BottomBar(
@@ -62,7 +99,7 @@ class MainActivity : ComponentActivity() {
                         AnimatedNavHost(
                             modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                             navController = navController,
-                            startDestination = Route.Apps.path,
+                            startDestination = if (packageUsagePermissionGranted) Route.Apps.path else Route.PackageUsagePermission.path,
                             enterTransition = { fadeInTransition },
                             popEnterTransition = { fadeInTransition },
                             exitTransition = { fadeOutTransition },
@@ -86,6 +123,15 @@ class MainActivity : ComponentActivity() {
                                     navController = navController
                                 )
                             }
+                            composable(Route.PackageUsagePermission.path) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+                                PackageUsagePermissionPage(
+                                    navController = navController,
+                                    context = applicationContext
+                                )
+                            }
                             composable(Route.AddApps.path) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -103,6 +149,17 @@ class MainActivity : ComponentActivity() {
                                 SettingsPage(
                                     navController = navController
                                 )
+
+                                /*val builder = NotificationCompat.Builder(applicationContext, getString(R.string.notification_channel_id))
+                                    .setSmallIcon(R.mipmap.ic_launcher_round)
+                                    .setContentTitle("Settings Opened")
+                                    .setContentText("Heehee... It looks like you opened the secret settings menu.")
+                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+                                with(NotificationManagerCompat.from(applicationContext)) {
+                                    notify(51251, builder.build())
+                                }*/
+
                             }
                             composable(Route.Categories.path) {
                                 LaunchedEffect(Unit) {

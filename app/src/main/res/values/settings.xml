@@ -4,6 +4,8 @@
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_appearance_supporting">Customize the app\'s appearance.</string>
 
+    <string name="settings_dialog_list_dismiss">Cancel</string>
+
     <string name="settings_dark_mode_setting_name">Dark mode</string>
     <string name="settings_oled_mode_setting_name">Pure black dark mode</string>
     <string name="settings_theme_setting_name">Theme</string>

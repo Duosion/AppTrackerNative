@@ -45,12 +45,13 @@ fun CategoriesPage(
                 dismissText = R.string.categories_add_dialog_dismiss,
                 placeholderText = R.string.categories_add_dialog_placeholder,
                 labelText = R.string.categories_add_dialog_label,
+                inputMaxLength = 32,
                 onConfirm = {
+                    addCategoryDialogEnabled = false
                     viewModel.addCategory(Category(
                         name = it,
                         position = screenState.categories.count()
                     ))
-                    addCategoryDialogEnabled = false
                 },
                 onDismiss = { addCategoryDialogEnabled = false }
             )
@@ -64,9 +65,10 @@ fun CategoriesPage(
                 dismissText = R.string.categories_edit_dialog_dismiss,
                 placeholderText = R.string.categories_edit_dialog_placeholder,
                 labelText = R.string.categories_edit_dialog_label,
+                inputMaxLength = 32,
                 onConfirm = {
-                    viewModel.setName(editNameDialogState.category!!, it)
                     editNameDialogState = CategoryDialogState()
+                    viewModel.setName(editNameDialogState.category!!, it)
                 },
                 onDismiss = { editNameDialogState = CategoryDialogState() }
             )
@@ -80,8 +82,8 @@ fun CategoriesPage(
                 confirmText = R.string.categories_delete_confirm_dialog_confirm,
                 dismissText = R.string.categories_delete_confirm_dialog_dismiss,
                 onConfirm = {
-                    viewModel.delete(category)
                     deleteConfirmDialogEnabled = CategoryDialogState()
+                    viewModel.delete(category)
                 },
                 onDismiss = { deleteConfirmDialogEnabled = CategoryDialogState() }
             )

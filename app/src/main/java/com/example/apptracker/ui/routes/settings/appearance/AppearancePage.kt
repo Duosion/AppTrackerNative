@@ -48,6 +48,7 @@ fun AppearancePage (
         ) {
 
             SettingsDialogListItemCard(
+                dialogTitle = R.string.settings_dark_mode_setting_name,
                 headlineText = { Text(stringResource(id = R.string.settings_dark_mode_setting_name)) },
                 supportingText = {
                     Text(stringResource(id = darkModeSetting.valueName))
@@ -64,6 +65,7 @@ fun AppearancePage (
                 }
             )
             SettingsDialogListItemCard(
+                dialogTitle = R.string.settings_theme_setting_name,
                 headlineText = { Text(stringResource(id = R.string.settings_theme_setting_name)) },
                 supportingText = {
                     Text(stringResource(id = themeSetting.valueName))

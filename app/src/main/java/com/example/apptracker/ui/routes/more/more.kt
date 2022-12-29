@@ -1,6 +1,8 @@
 package com.example.apptracker.ui.routes.more
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,23 +26,22 @@ fun MorePage(
             )
         }
     ) { padding ->
-
-        Column(
+        Divider()
+        val listItems = listOf(
+            MoreListItem.AddApps,
+            MoreListItem.Categories,
+            MoreListItem.Settings
+        )
+        LazyColumn(
             modifier = Modifier
                 .padding(top = padding.calculateTopPadding())
                 //.systemBarsPadding()
                 .fillMaxSize()
         ) {
-            Divider()
-            val listItems = listOf(
-                MoreListItem.AddApps,
-                MoreListItem.Categories,
-                MoreListItem.Settings
-            )
-            listItems.forEach { listItem ->
+            items(listItems) {
                 MostListEntry(
                     navController = navController,
-                    listItem = listItem
+                    listItem = it
                 )
             }
         }

@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
 import com.example.apptracker.ui.components.ListItemCard
+import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.util.apps.SortFunction
 import com.example.apptracker.util.data.settings.values.DarkModeValues
 import com.example.apptracker.util.navigation.SettingsListItem
@@ -127,6 +128,7 @@ fun SettingsDialogListItemCard(
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     values: List<DialogListItem> = listOf(),
+    dialogTitle: Int,
     selectedValue: Int = 0,
     onSelect: (DialogListItem) -> Unit = {},
     onDismiss: () -> Unit = {}
@@ -137,13 +139,13 @@ fun SettingsDialogListItemCard(
     if (dialogOpen) {
         AlertDialog(
             onDismissRequest = { dialogOpen = false },
-            title = { Text(stringResource(id = R.string.search_sort_dialog_text)) },
+            title = { ResourceText(dialogTitle) },
             text = {
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .selectableGroup()
                 ) {
-                    values.forEach { option ->
+                    items(values) { option ->
                         ElevatedButton(
                             contentPadding = PaddingValues(0.dp),
                             modifier = Modifier
@@ -186,7 +188,7 @@ fun SettingsDialogListItemCard(
                         onDismiss()
                     }
                 ) {
-                    Text("Cancel")
+                    ResourceText(R.string.settings_dialog_list_dismiss)
                 }
             }
         )

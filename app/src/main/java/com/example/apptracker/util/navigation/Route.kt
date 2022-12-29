@@ -7,4 +7,5 @@ sealed class Route(val path: String) {
     object Settings: Route("/more/settings")
     object Categories: Route("/more/categories")
     object Appearance: Route("/more/settings/appearance")
+    object PackageUsagePermission: Route("/packageUsagePermission")
 }
