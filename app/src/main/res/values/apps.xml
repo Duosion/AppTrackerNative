@@ -10,4 +10,10 @@
     <string name="apps_add_app_day_start_utc_headline">Day start is in UTC</string>
     <string name="apps_add_app_category_headline">Category</string>
     <string name="apps_add_app_category_dialog_headline">Select category</string>
+
+    <string name="apps_add_app_reminder_offset_no_offset_name">No offset</string>
+    <string name="apps_add_app_reminder_offset_fifteen_minutes_name">15 minutes</string>
+    <string name="apps_add_app_reminder_offset_thirty_minutes_name">30 minutes</string>
+    <string name="apps_add_app_reminder_offset_one_hour_name">1 hour</string>
+    <string name="apps_add_app_reminder_offset_custom_name">Custom</string>
 </resources>
