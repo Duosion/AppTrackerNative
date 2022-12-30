@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -26,7 +27,7 @@ class CategoriesViewModel (
     }
 
     private fun refresh() = viewModelScope.launch {
-        //_screenState.value = CategoriesScreenState(isLoading = true)
+        _screenState.value = CategoriesScreenState(isLoading = true)
         withContext(Dispatchers.IO) {
             _screenState.value = CategoriesScreenState(
                 categories = categoriesRepository.getCategories()
@@ -34,10 +35,16 @@ class CategoriesViewModel (
         }
     }
 
+    private fun update() {
+        _screenState.update {
+            it.copy(categories = categoriesRepository.getCategories())
+        }
+    }
+
     fun addCategory(category: Category) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             categoriesRepository.addCategory(category)
-            refresh()
+            update()
         }
     }
 
@@ -47,21 +54,21 @@ class CategoriesViewModel (
             val existing = _screenState.value.categories.find { it.position == newPosition }
             existing?.let { categoriesRepository.setPosition(existing, category.position) }
             categoriesRepository.setPosition(category,newPosition)
-            refresh()
+            update()
         }
     }
 
     fun setName(category: Category, newName: String) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             categoriesRepository.setName(category, newName)
-            refresh()
+            update()
         }
     }
 
     fun delete(category: Category) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             categoriesRepository.deleteCategory(category)
-            refresh()
+            update()
         }
     }
 

@@ -20,8 +20,6 @@ class CategoriesRepository(
             return items + listOf(newCategory)
         }
 
-
-
         return items.dropWhile { it.hidden && !showHidden }.sortedBy { it.position }
     }
 
@@ -40,7 +38,7 @@ class CategoriesRepository(
     fun deleteCategory(category: Category) {
         dao.delete(category.id)
         // reformat categories
-        val categories = dao.getAll()
+        val categories = dao.getAll().sortedBy { it.position }
         categories.forEachIndexed { index, it ->
             setPosition(it, index)
         }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -57,9 +58,10 @@ fun CategoriesPage(
             )
         }
         editNameDialogState.enabled -> {
+            val category = editNameDialogState.category
             TextFieldDialog(
                 onDismissRequest = { editNameDialogState = CategoryDialogState() },
-                defaultValue = editNameDialogState.category!!.name,
+                defaultValue = category!!.name,
                 titleText = R.string.categories_edit_dialog_title,
                 confirmText = R.string.categories_edit_dialog_confirm,
                 dismissText = R.string.categories_edit_dialog_dismiss,
@@ -68,7 +70,7 @@ fun CategoriesPage(
                 inputMaxLength = 32,
                 onConfirm = {
                     editNameDialogState = CategoryDialogState()
-                    viewModel.setName(editNameDialogState.category!!, it)
+                    viewModel.setName(category, it)
                 },
                 onDismiss = { editNameDialogState = CategoryDialogState() }
             )
@@ -110,8 +112,7 @@ fun CategoriesPage(
             )
         }
     ) { padding ->
-        val categories = screenState.categories
-        val length = categories.count()
+
         Column(
             modifier = Modifier
                 .padding(top = padding.calculateTopPadding())
@@ -127,17 +128,22 @@ fun CategoriesPage(
                     ResourceText(R.string.categories_empty_list_text)
                 }
             } else {
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
                 ) {
-                    items(categories, key = { it.id }) {
+                    val categories = screenState.categories
+                    val length = categories.count()
+                    itemsIndexed(categories, key = { _, it -> it.id }) { index, it ->
+                        println("${it.id}, ${it.name}, ${it.position}")
                         Row(
                             modifier = Modifier.animateItemPlacement()
                         ) {
                             ComposableItem(
                                 category = it,
-                                isLast = it.position == (length - 1),
+                                isFirst = index == 0,
+                                isLast = index == length - 1,
                                 onMoveUp = { viewModel.setPosition(it, it.position - 1) },
                                 onMoveDown = { viewModel.setPosition(it, it.position + 1) },
                                 onEdit = {
@@ -165,6 +171,7 @@ fun CategoriesPage(
 @Composable
 fun ComposableItem(
     category: Category,
+    isFirst: Boolean = false,
     isLast: Boolean = false,
     onMoveUp: () -> Unit = {},
     onMoveDown: () -> Unit = {},
@@ -211,7 +218,7 @@ fun ComposableItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(
-                        enabled = category.position != 0,
+                        enabled = !isFirst,
                         onClick = onMoveUp
                     ) {
                         Icon(
