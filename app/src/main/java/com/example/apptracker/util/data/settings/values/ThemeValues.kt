@@ -1,7 +1,6 @@
 package com.example.apptracker.util.data.settings.values
 
 import com.example.apptracker.R
-import com.example.apptracker.util.data.apps.TrackedAppReminderOffset
 import com.example.apptracker.util.data.settings.ISettingValue
 
 enum class ThemeValues(override val id: Int, override val valueName: Int) : ISettingValue {
@@ -17,7 +16,7 @@ enum class ThemeValues(override val id: Int, override val valueName: Int) : ISet
     YOTSUBA(9, R.string.theme_yotsuba_label);
 
     companion object {
-        private val map = TrackedAppReminderOffset.values().associateBy { it.id }
+        private val map = values().associateBy { it.id }
         fun fromId (id: Int) = map[id] ?: DYNAMIC
     }
 }
