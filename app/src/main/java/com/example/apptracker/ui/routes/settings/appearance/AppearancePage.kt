@@ -55,7 +55,7 @@ fun AppearancePage (
                 },
                 values = DarkModeValues.values().map {
                     DialogListItem(
-                        name = it.valueName,
+                        name = stringResource(id = it.valueName),
                         value = it.id
                     )
                 },
@@ -72,7 +72,7 @@ fun AppearancePage (
                 },
                 values = ThemeValues.values().map {
                     DialogListItem(
-                        name = it.valueName,
+                        name = stringResource(it.valueName),
                         value = it.id
                     )
                 },

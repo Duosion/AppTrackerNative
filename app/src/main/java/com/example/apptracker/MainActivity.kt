@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
@@ -21,15 +22,19 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.apptracker.util.navigation.MainNavItem
-import com.example.apptracker.ui.routes.more.AddAppsPage
-import com.example.apptracker.ui.routes.AppsPage
+import com.example.apptracker.ui.routes.more.addApps.AddAppsPage
+import com.example.apptracker.ui.routes.apps.AppsPage
 import com.example.apptracker.ui.routes.PackageUsagePermissionPage
+import com.example.apptracker.ui.routes.apps.addApp.AddAppPage
+import com.example.apptracker.ui.routes.apps.addApp.AddAppViewModel
 import com.example.apptracker.ui.routes.more.categories.CategoriesPage
 import com.example.apptracker.ui.routes.more.MorePage
 import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
 import com.example.apptracker.ui.routes.settings.SettingsPage
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
+import com.example.apptracker.ui.routes.settings.general.GeneralPage
 import com.example.apptracker.ui.theme.AppTrackerTheme
+import com.example.apptracker.util.apps.AppsManager
 import com.example.apptracker.util.data.getDatabase
 import com.example.apptracker.util.navigation.Route
 import com.example.apptracker.util.permissions.isPackageUsagePermissionAccessGranted
@@ -111,8 +116,27 @@ class MainActivity : ComponentActivity() {
                                 }
                                 //setSystemBarsAppearance()
                                 AppsPage(
-                                    navController = navController
+                                    navController = navController,
+                                    database = appDatabase
                                 )
+                            }
+                            composable(Route.AddApp.path) { backStackEntry ->
+                                val packageName: String? = backStackEntry.arguments?.getString("packageName")
+                                val packageManager = LocalContext.current.packageManager
+                                val appsManager = AppsManager(packageManager)
+
+                                if (packageName == null) {
+                                    navController.popBackStack()
+                                } else {
+                                    val appInfo = appsManager.getApp(packageName)
+                                    AddAppPage(
+                                        navController = navController,
+                                        database = appDatabase,
+                                        packageManager = packageManager,
+                                        appInfo = appInfo,
+                                        viewModel = AddAppViewModel(appDatabase, packageName)
+                                    )
+                                }
                             }
                             composable(Route.More.path) {
                                 LaunchedEffect(Unit) {
@@ -149,17 +173,6 @@ class MainActivity : ComponentActivity() {
                                 SettingsPage(
                                     navController = navController
                                 )
-
-                                /*val builder = NotificationCompat.Builder(applicationContext, getString(R.string.notification_channel_id))
-                                    .setSmallIcon(R.mipmap.ic_launcher_round)
-                                    .setContentTitle("Settings Opened")
-                                    .setContentText("Heehee... It looks like you opened the secret settings menu.")
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-                                with(NotificationManagerCompat.from(applicationContext)) {
-                                    notify(51251, builder.build())
-                                }*/
-
                             }
                             composable(Route.Categories.path) {
                                 LaunchedEffect(Unit) {
@@ -179,6 +192,14 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     database = appDatabase,
                                     viewModel = appearanceViewModel
+                                )
+                            }
+                            composable(Route.General.path) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+                                GeneralPage(
+                                    navController = navController
                                 )
                             }
                         }

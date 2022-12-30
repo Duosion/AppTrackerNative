@@ -1,4 +1,4 @@
-package com.example.apptracker.ui.routes.more
+package com.example.apptracker.ui.routes.more.addApps
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -17,10 +17,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.SearchTopAppBar
-import com.example.apptracker.util.apps.AppsViewModelV2
-import com.example.apptracker.util.apps.SortFunction
+import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.io.File
 
@@ -28,7 +28,7 @@ import java.io.File
 @Composable
 fun AddAppsPage(
     navController: NavController,
-    viewModel: AppsViewModelV2 = AppsViewModelV2( LocalContext.current.packageManager)
+    viewModel: AddAppsViewModel = AddAppsViewModel(LocalContext.current.packageManager)
 ) {
     val screenState by viewModel.state.collectAsState()
 
@@ -50,7 +50,10 @@ fun AddAppsPage(
                             navController.popBackStack()
                         }
                     ) {
-                        Icon(painter = painterResource(id = R.drawable.back_icon), contentDescription = stringResource( id = R.string.back_button_description ))
+                        Icon(
+                            painter = painterResource(id = R.drawable.back_icon),
+                            contentDescription = stringResource(id = R.string.back_button_description)
+                        )
                     }
                 },
                 onSearch = { query ->
@@ -79,28 +82,41 @@ fun AddAppsPage(
                     CircularProgressIndicator()
                 }
             } else {
-                screenState.apps?.let {
-                    val sortMode = screenState.queryState.sortMode
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(it) { info ->
-                            val label = info.loadLabel(packageManager).toString()
-                            AddAppListEntry(
-                                appInfo = info,
-                                packageManager = packageManager,
-                                label = label,
-                                sortMode = sortMode,
-                                onClick = {
+                val context = LocalContext.current
 
+                val sortMode = screenState.queryState.sortMode
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(screenState.apps) { info ->
+                        val channel = stringResource(id = R.string.notification_channel_id)
+                        val label = info.loadLabel(packageManager).toString()
+                        AddAppListEntry(
+                            appInfo = info,
+                            packageManager = packageManager,
+                            label = label,
+                            sortMode = sortMode,
+                            onClick = {
+                                navController.navigate("${Route.AddApp.argumentlessPath}${info.packageName}") {
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                            )
-                        }
+                                /*val builder = NotificationCompat.Builder(context, channel)
+                                                .setSmallIcon(R.drawable.app_icon)
+                                                .setContentTitle(label)
+                                                .setContentText(info.packageName)
+                                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+                                            with(NotificationManagerCompat.from(context)) {
+                                                notify(info.uid, builder.build())
+                                            }*/
+                            }
+                        )
                     }
                 }
             }
-
         }
+
     }
 }
 
@@ -124,7 +140,7 @@ fun AddAppListEntry(
                 Text(label)
             },
             supportingText = {
-                when(sortMode) {
+                when (sortMode) {
                     SortFunction.Size -> {
                         val file = File(appInfo.publicSourceDir)
                         val sizeInMB = file.length() / 1e+6F
@@ -141,7 +157,7 @@ fun AddAppListEntry(
             leadingContent = {
                 Image(
                     modifier = Modifier.size(48.dp),
-                    painter = rememberDrawablePainter(drawable = appInfo.loadIcon(packageManager)) ,
+                    painter = rememberDrawablePainter(drawable = appInfo.loadIcon(packageManager)),
                     contentDescription = label,
                     contentScale = ContentScale.FillHeight,
                 )

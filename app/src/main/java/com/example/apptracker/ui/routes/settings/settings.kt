@@ -12,15 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
 import com.example.apptracker.ui.components.ListItemCard
 import com.example.apptracker.ui.components.ResourceText
-import com.example.apptracker.util.apps.SortFunction
-import com.example.apptracker.util.data.settings.values.DarkModeValues
 import com.example.apptracker.util.navigation.SettingsListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +44,7 @@ fun SettingsPage(
                 modifier = Modifier.fillMaxSize()
             ) {
                 val listItems = listOf(
+                    SettingsListItem.General,
                     SettingsListItem.Appearance
                 )
                 items(listItems) { item ->
@@ -115,7 +113,7 @@ fun SettingsListItemCard(
 }
 
 data class DialogListItem(
-    val name: Int,
+    val name: String,
     val value: Any
 )
 
@@ -171,7 +169,7 @@ fun SettingsDialogListItemCard(
                                     onClick = null
                                 )
                                 Text(
-                                    text = stringResource(id = option.name),
+                                    text =option.name,
                                     modifier = Modifier
                                         .padding(start = 10.dp),
                                 )

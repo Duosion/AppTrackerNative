@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.apptracker"
-        minSdk 23
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -60,7 +60,9 @@ dependencies {
     implementation 'com.google.accompanist:accompanist-navigation-animation:0.28.0'
     implementation 'com.google.accompanist:accompanist-drawablepainter:0.28.0'
     implementation 'com.google.accompanist:accompanist-systemuicontroller:0.28.0'
+    implementation "com.google.accompanist:accompanist-pager:0.28.0"
     implementation "androidx.datastore:datastore-preferences:1.1.0-alpha01"
+    implementation 'com.marosseleng.android:compose-material3-datetime-pickers:0.2.0'
     // room
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"

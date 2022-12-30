@@ -1,4 +1,4 @@
-package com.example.apptracker.util.apps
+package com.example.apptracker.ui.routes.more.addApps
 
 import android.content.pm.ApplicationInfo
 

@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.apptracker.R
-import com.example.apptracker.util.apps.AppsViewQueryState
-import com.example.apptracker.util.apps.SortFunction
+import com.example.apptracker.ui.routes.more.addApps.AddAppsViewQueryState
+import com.example.apptracker.ui.routes.more.addApps.SortFunction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +41,7 @@ fun SearchTopAppBar(
     var isSearchFocused by remember { mutableStateOf(false) }
 
     var sortDialogOpen by remember { mutableStateOf(false) }
-    var selectedSortMode by remember { mutableStateOf(AppsViewQueryState().sortMode) }
+    var selectedSortMode by remember { mutableStateOf(AddAppsViewQueryState().sortMode) }
 
     if (isSearchFocused) {
         LaunchedEffect(Unit) {

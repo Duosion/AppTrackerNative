@@ -48,11 +48,8 @@ fun CategoriesPage(
                 labelText = R.string.categories_add_dialog_label,
                 inputMaxLength = 32,
                 onConfirm = {
+                    viewModel.addCategory(it)
                     addCategoryDialogEnabled = false
-                    viewModel.addCategory(Category(
-                        name = it,
-                        position = screenState.categories.count()
-                    ))
                 },
                 onDismiss = { addCategoryDialogEnabled = false }
             )
@@ -112,7 +109,6 @@ fun CategoriesPage(
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(top = padding.calculateTopPadding())
@@ -128,13 +124,13 @@ fun CategoriesPage(
                     ResourceText(R.string.categories_empty_list_text)
                 }
             } else {
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
                 ) {
                     val categories = screenState.categories
                     val length = categories.count()
+
                     itemsIndexed(categories, key = { _, it -> it.id }) { index, it ->
                         println("${it.id}, ${it.name}, ${it.position}")
                         Row(

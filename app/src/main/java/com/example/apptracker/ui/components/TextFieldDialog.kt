@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -26,10 +28,15 @@ fun TextFieldDialog(
     labelText: Int,
     inputMaxLength: Int = 0,
     onConfirm: (String) -> Unit = {},
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
+    focusRequester: FocusRequester = remember { FocusRequester() }
 ) {
     var textFieldValue by remember { mutableStateOf(defaultValue) }
     var textFieldError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -39,6 +46,9 @@ fun TextFieldDialog(
         text = {
             Column {
                 OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
                     value = textFieldValue,
                     onValueChange = {
                         textFieldError = false

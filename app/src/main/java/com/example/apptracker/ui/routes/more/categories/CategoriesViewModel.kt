@@ -1,5 +1,8 @@
 package com.example.apptracker.ui.routes.more.categories
 
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.apptracker.util.data.AppDatabase
@@ -13,11 +16,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Stable
 class CategoriesViewModel (
     database: AppDatabase
 ) : ViewModel() {
 
-    private val categoriesRepository = CategoriesRepository(database.categoriesDao())
+    private val categoriesDao = database.categoriesDao()
+    private val categoriesRepository = CategoriesRepository(categoriesDao)
 
     private val _screenState = MutableStateFlow(CategoriesScreenState())
     val state: StateFlow<CategoriesScreenState> = _screenState.asStateFlow()
@@ -41,9 +46,12 @@ class CategoriesViewModel (
         }
     }
 
-    fun addCategory(category: Category) = viewModelScope.launch {
+    fun addCategory(name: String) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            categoriesRepository.addCategory(category)
+            categoriesRepository.addCategory(Category(
+                name = name,
+                position = categoriesDao.getAll().count()
+            ))
             update()
         }
     }

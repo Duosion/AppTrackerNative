@@ -36,7 +36,8 @@ class CategoriesRepository(
     }
 
     fun deleteCategory(category: Category) {
-        dao.delete(category.id)
+        val id = category.id
+        dao.delete(id)
         // reformat categories
         val categories = dao.getAll().sortedBy { it.position }
         categories.forEachIndexed { index, it ->
