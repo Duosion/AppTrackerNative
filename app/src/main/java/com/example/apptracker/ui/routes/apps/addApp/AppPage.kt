@@ -23,6 +23,7 @@ import com.example.apptracker.ui.routes.settings.DialogListItem
 import com.example.apptracker.ui.routes.settings.SettingsDialogListItemCard
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
 import com.example.apptracker.util.data.AppDatabase
+import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.apps.TrackedAppReminderOffset
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.marosseleng.compose.material3.datetimepickers.time.ui.dialog.TimePickerDialog
@@ -38,7 +39,10 @@ fun AddAppPage(
     mode: AppPageMode = AppPageMode.ADD,
     viewModel: IAppPageViewModel = AddAppViewModel(database, appInfo.packageName)
 ) {
+    val defaultTrackedApp = TrackedApp(appInfo.packageName)
+
     val screenState by viewModel.state.collectAsState()
+    val trackedApp by screenState.trackedApp.collectAsState(initial = defaultTrackedApp)
 
     val packageManager = LocalContext.current.packageManager
     val appLabel = appInfo.loadLabel(packageManager).toString()
@@ -49,9 +53,14 @@ fun AddAppPage(
 
     val categories = screenState.categories
 
-    val trackedApp = screenState.trackedApp
-    val dayStart = LocalTime.of(trackedApp.dayStartHour, trackedApp.dayStartMinute)
-    val customOffsetTime = LocalTime.of(trackedApp.reminderOffsetHour, trackedApp.reminderOffsetMinute)
+    val dayStart = LocalTime.of(
+        trackedApp?.dayStartHour ?: defaultTrackedApp.dayStartHour,
+        trackedApp?.dayStartMinute ?: defaultTrackedApp.dayStartMinute
+    )
+    val customOffsetTime = LocalTime.of(
+        trackedApp?.reminderOffsetHour ?: defaultTrackedApp.reminderOffsetHour,
+        trackedApp?.reminderOffsetMinute ?: defaultTrackedApp.reminderOffsetMinute
+    )
 
     when {
         timePickerEnabled -> {
@@ -176,35 +185,37 @@ fun AddAppPage(
                         timePickerEnabled = true
                     }
                 )
+                val dayStartIsUTC = trackedApp?.dayStartIsUTC ?: defaultTrackedApp.dayStartIsUTC
                 SettingsListItemCard(
                     headlineText = { ResourceText(id = R.string.apps_add_app_day_start_utc_headline) },
                     trailingContent = {
                         Switch(
-                            checked = trackedApp.dayStartIsUTC,
+                            checked = dayStartIsUTC,
                             onCheckedChange = null
                         )
                     },
                     onClick = {
-                        viewModel.setDayStartIsUTC(!trackedApp.dayStartIsUTC)
+                        viewModel.setDayStartIsUTC(dayStartIsUTC)
                     }
                 )
                 Divider()
                 // reminder notification stuff
+                val reminderNotification = trackedApp?.reminderNotification ?: defaultTrackedApp.reminderNotification
                 SettingsListItemCard(
                     headlineText = { ResourceText(id = R.string.apps_add_app_reminder_notification_headline) },
                     supportingText = { ResourceText(id = R.string.apps_add_app_reminder_notification_supporting) },
                     trailingContent = {
                         Switch(
-                            checked = trackedApp.reminderNotification,
+                            checked = reminderNotification,
                             onCheckedChange = null
                         )
                     },
                     onClick = {
-                        viewModel.setReminderNotification(!trackedApp.reminderNotification)
+                        viewModel.setReminderNotification(!reminderNotification)
                     }
                 )
-                if (trackedApp.reminderNotification) {
-                    val currentOffset = TrackedAppReminderOffset.fromId(trackedApp.reminderOffset)
+                if (reminderNotification) {
+                    val currentOffset = TrackedAppReminderOffset.fromId(trackedApp?.reminderOffset ?: defaultTrackedApp.reminderOffset)
                     // show offset picker
                     SettingsDialogListItemCard(
                         headlineText = { ResourceText(id = R.string.apps_add_app_reminder_offset_headline) },
@@ -244,9 +255,9 @@ fun AddAppPage(
                 }
                 Divider()
                 if (categories.isNotEmpty()) {
-                    val selectedCategory =
-                        categories.find { it.id == trackedApp.categoryId } ?: categories.first()
-
+                    val trackedAppCatId = trackedApp?.categoryId ?: defaultTrackedApp.categoryId
+                    val selectedCategory = categories.find { it.id == trackedAppCatId } ?: categories.first()
+                    println(selectedCategory.name + " " + selectedCategory.position)
                     SettingsDialogListItemCard(
                         dialogTitle = R.string.apps_add_app_category_dialog_headline,
                         headlineText = { ResourceText(id = R.string.apps_add_app_category_headline) },

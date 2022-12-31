@@ -10,10 +10,7 @@ import com.example.apptracker.util.apps.AppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedAppDao
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -55,7 +52,7 @@ class AddAppsViewModel(
             _appsState.update {
                 it.copy(
                     apps = getFilteredApps(appsManager.getApps()),
-                    trackedApps = trackedAppDao.getAll()
+                    trackedApps = trackedAppDao.getAll().first()
                 )
             }
             setStateLoading(false)

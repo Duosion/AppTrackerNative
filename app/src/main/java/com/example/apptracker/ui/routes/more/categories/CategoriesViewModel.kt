@@ -9,10 +9,7 @@ import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.categories.CategoriesRepository
 import com.example.apptracker.util.data.categories.Category
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -40,43 +37,33 @@ class CategoriesViewModel (
         }
     }
 
-    private fun update() {
-        _screenState.update {
-            it.copy(categories = categoriesRepository.getCategories())
-        }
-    }
-
     fun addCategory(name: String) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             categoriesRepository.addCategory(Category(
                 name = name,
-                position = categoriesDao.getAll().count()
+                position = categoriesDao.getAll().first().count()
             ))
-            update()
         }
     }
 
     fun setPosition(category: Category, newPosition: Int) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             // find category in existing position
-            val existing = _screenState.value.categories.find { it.position == newPosition }
+            val existing = _screenState.value.categories.first().find { it.position == newPosition }
             existing?.let { categoriesRepository.setPosition(existing, category.position) }
             categoriesRepository.setPosition(category,newPosition)
-            update()
         }
     }
 
     fun setName(category: Category, newName: String) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             categoriesRepository.setName(category, newName)
-            update()
         }
     }
 
     fun delete(category: Category) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             categoriesRepository.deleteCategory(category)
-            update()
         }
     }
 

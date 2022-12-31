@@ -7,10 +7,7 @@ import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.categories.CategoriesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalTime
@@ -23,7 +20,8 @@ class AddAppViewModel(
     private val categoriesRepository = CategoriesRepository(database.categoriesDao())
     private val trackedAppDao = database.trackedAppDao()
 
-    private val _screenState = MutableStateFlow(AppScreenState(TrackedApp(packageName)))
+    private val _trackedAppState = MutableStateFlow(TrackedApp(packageName))
+    private val _screenState = MutableStateFlow(AppScreenState(_trackedAppState.asStateFlow()))
     override val state: StateFlow<AppScreenState> = _screenState.asStateFlow()
 
     init {
@@ -43,7 +41,7 @@ class AddAppViewModel(
         withContext(Dispatchers.IO) {
             _screenState.update {
                 it.copy(
-                    categories = categoriesRepository.getCategories(showHidden = true)
+                    categories = categoriesRepository.getCategories(showHidden = true).first()
                 )
             }
             setLoading(false)
@@ -51,70 +49,61 @@ class AddAppViewModel(
     }
 
     override fun setDayStartTime(time: LocalTime) = viewModelScope.launch {
-        _screenState.update {
+        _trackedAppState.update {
             it.copy(
-                trackedApp = _screenState.value.trackedApp.copy(
-                    dayStartHour = time.hour,
-                    dayStartMinute = time.minute
-                )
+                dayStartHour = time.hour,
+                dayStartMinute = time.minute
             )
         }
     }
 
     override fun setDayStartIsUTC(value: Boolean) = viewModelScope.launch {
-        _screenState.update {
+        _trackedAppState.update {
             it.copy(
-                trackedApp = _screenState.value.trackedApp.copy(
-                    dayStartIsUTC = value
-                )
+                dayStartIsUTC = value
             )
         }
     }
 
     override fun setCategoryId(value: Int) = viewModelScope.launch {
-        _screenState.update {
+        _trackedAppState.update {
             it.copy(
-                trackedApp = _screenState.value.trackedApp.copy(
-                    categoryId = value
-                )
+                categoryId = value
             )
         }
     }
 
     override fun setReminderNotification(value: Boolean) = viewModelScope.launch {
-        _screenState.update {
+        _trackedAppState.update {
             it.copy(
-                trackedApp = _screenState.value.trackedApp.copy(
-                    reminderNotification = value
-                )
+                reminderNotification = value
             )
         }
     }
 
     override fun setReminderOffset(value: Int) = viewModelScope.launch {
-        _screenState.update {
+        _trackedAppState.update {
             it.copy(
-                trackedApp = _screenState.value.trackedApp.copy(
-                    reminderOffset = value
-                )
+                reminderOffset = value
             )
         }
     }
 
     override fun setCustomReminderOffsetTime(time: LocalTime) = viewModelScope.launch {
-        _screenState.update {
+        _trackedAppState.update {
             it.copy(
-                trackedApp = _screenState.value.trackedApp.copy(
-                    reminderOffsetHour = time.hour,
-                    reminderOffsetMinute = time.minute
-                )
+                reminderOffsetHour = time.hour,
+                reminderOffsetMinute = time.minute
             )
         }
     }
 
     override fun addTrackedApp() = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            trackedAppDao.insert(_screenState.value.trackedApp)
+            val toAdd = _screenState.value.trackedApp.first()
+            if (toAdd != null) {
+                trackedAppDao.insert(toAdd)
+            }
         }
     }
 

@@ -3,7 +3,6 @@ package com.example.apptracker.ui.routes.apps
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,26 +13,26 @@ import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.ResourceText
+import com.example.apptracker.ui.routes.settings.SettingsListItemCard
 import com.example.apptracker.util.data.AppDatabase
+import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.res.painterResource
-import androidx.core.content.ContextCompat
-import com.example.apptracker.ui.routes.settings.SettingsListItemCard
-import com.example.apptracker.util.navigation.Route
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalPagerApi::class)
@@ -42,10 +41,13 @@ fun AppsPage(
     navController: NavController,
     database: AppDatabase,
     context: Context = LocalContext.current,
-    packageManager: PackageManager = LocalContext.current.packageManager,
+    packageManager: PackageManager = context.packageManager,
     viewModel: AppsViewModel = AppsViewModel(database, packageManager)
 ) {
     val screenState by viewModel.state.collectAsState()
+    val apps by screenState.apps.collectAsState(initial = listOf())
+    val categories by screenState.categories.collectAsState(initial = listOf())
+    
     val coroutineScope = rememberCoroutineScope()
     var appsInfoDialogState by remember { mutableStateOf(AppsInfoDialogState()) }
 
@@ -57,7 +59,8 @@ fun AppsPage(
                 onDismissRequest = { appsInfoDialogState = AppsInfoDialogState() },
                 app = app!!,
                 onOpenClick = {
-                    val intent = context.packageManager.getLaunchIntentForPackage(app.trackedApp.packageName)
+                    val intent =
+                        context.packageManager.getLaunchIntentForPackage(app.trackedApp.packageName)
                     if (intent != null) {
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         ContextCompat.startActivity(context, intent, null)
@@ -76,7 +79,6 @@ fun AppsPage(
         }
     }
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -90,8 +92,6 @@ fun AppsPage(
                 .fillMaxSize()
         ) {
             val pagerState = rememberPagerState()
-            val categories = screenState.categories
-            val apps = screenState.apps
 
 
             val groupedApps = apps.groupBy { app ->
@@ -156,19 +156,15 @@ fun AppsPage(
                         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp),
                     ) {
                         items(items, key = { it.trackedApp.packageName }) {
-                            if (it.isDummy) {
-                                DummyAppCard()
-                            } else {
-                                AppCard(
-                                    app = it,
-                                    onClick = {
-                                        appsInfoDialogState = AppsInfoDialogState(
-                                            enabled = true,
-                                            app = it,
-                                        )
-                                    }
-                                )
-                            }
+                            AppCard(
+                                app = it,
+                                onClick = {
+                                    appsInfoDialogState = AppsInfoDialogState(
+                                        enabled = true,
+                                        app = it,
+                                    )
+                                }
+                            )
                         }
                     }
                 }
@@ -223,10 +219,10 @@ fun AppListItem(
             )
         },
         trailingContent = {
-          Checkbox(
-              checked = app.trackedApp.openedToday,
-              onCheckedChange = {}
-          )
+            Checkbox(
+                checked = app.trackedApp.openedToday,
+                onCheckedChange = {}
+            )
         },
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent

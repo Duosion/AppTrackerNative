@@ -1,26 +1,35 @@
 package com.example.apptracker.util.data.categories
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
+
 class CategoriesRepository(
     private val dao: CategoriesDao
 ) {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getCategories(
         showHidden: Boolean = false
-    ): List<Category> {
+    ): Flow<List<Category>> {
         val items = dao.getAll()
-
-        if (items.isEmpty()) {
-            val newCategory = Category(
-                id = 0,
-                name = "Default",
-                position = 0,
-                hidden = true
-            )
-            addCategory(newCategory)
-            return items + listOf(newCategory)
+       return items.mapLatest {
+            if (it.isEmpty()) {
+                val newCategory = Category(
+                    id = 0,
+                    name = "Default",
+                    position = 0,
+                    hidden = true
+                )
+                withContext(Dispatchers.IO) {
+                    addCategory(newCategory)
+                }
+                it + listOf(newCategory)
+            } else {
+                it.filterNot { item -> item.hidden && !showHidden }.sortedBy { item -> item.position }
+            }
         }
-
-        return items.filterNot { it.hidden && !showHidden }.sortedBy { it.position }
     }
 
     fun addCategory(category: Category) {
@@ -35,14 +44,15 @@ class CategoriesRepository(
         dao.setName(category.id, name)
     }
 
-    fun deleteCategory(category: Category) {
+    suspend fun deleteCategory(category: Category) {
         val id = category.id
         dao.delete(id)
         // reformat categories
-        val categories = dao.getAll().sortedBy { it.position }
+        val categories = dao.getAll().first().sortedBy { it.position }
         categories.forEachIndexed { index, it ->
             setPosition(it, index)
         }
+
     }
 
 }

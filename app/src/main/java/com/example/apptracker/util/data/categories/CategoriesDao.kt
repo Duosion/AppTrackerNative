@@ -5,11 +5,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoriesDao {
     @Query("SELECT * FROM Category")
-    fun getAll(): List<Category>
+    fun getAll(): Flow<List<Category>>
 
     @Query("SELECT * FROM Category WHERE id = (:categoryId)")
     fun get(categoryId: Int): Category?

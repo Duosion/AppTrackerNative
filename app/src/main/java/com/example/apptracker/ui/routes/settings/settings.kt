@@ -132,8 +132,8 @@ fun SettingsDialogListItemCard(
     onDismiss: () -> Unit = {}
 ) {
     var dialogOpen by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(values[selectedValue]) }
 
+    var selectedOption by remember { mutableStateOf(values[selectedValue]) }
     if (dialogOpen) {
         AlertDialog(
             onDismissRequest = { dialogOpen = false },

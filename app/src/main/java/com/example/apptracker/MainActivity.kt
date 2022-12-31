@@ -26,6 +26,7 @@ import com.example.apptracker.util.navigation.MainNavItem
 import com.example.apptracker.ui.routes.more.addApps.AddAppsPage
 import com.example.apptracker.ui.routes.apps.AppsPage
 import com.example.apptracker.ui.routes.PackageUsagePermissionPage
+import com.example.apptracker.ui.routes.apps.AppsViewModel
 import com.example.apptracker.ui.routes.apps.addApp.AddAppPage
 import com.example.apptracker.ui.routes.apps.addApp.AddAppViewModel
 import com.example.apptracker.ui.routes.apps.addApp.AppPageMode
@@ -33,6 +34,7 @@ import com.example.apptracker.ui.routes.apps.addApp.EditAppViewModel
 import com.example.apptracker.ui.routes.more.categories.CategoriesPage
 import com.example.apptracker.ui.routes.more.MorePage
 import com.example.apptracker.ui.routes.more.addApps.AddAppsViewModel
+import com.example.apptracker.ui.routes.more.categories.CategoriesViewModel
 import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
 import com.example.apptracker.ui.routes.settings.SettingsPage
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
@@ -79,8 +81,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val appDatabase = getDatabase(applicationContext)
 
+            val packageManager = LocalContext.current.packageManager
+
             val appearanceViewModel = AppearanceViewModel(appDatabase)
-            val addAppsViewModel = AddAppsViewModel(LocalContext.current.packageManager, appDatabase)
+            val addAppsViewModel = AddAppsViewModel(packageManager, appDatabase)
+            val appsViewModel = AppsViewModel(appDatabase, packageManager)
+            val categoriesViewModel = CategoriesViewModel(appDatabase)
 
             AppTrackerTheme(
                 database = appDatabase,
@@ -120,7 +126,8 @@ class MainActivity : ComponentActivity() {
                                 //setSystemBarsAppearance()
                                 AppsPage(
                                     navController = navController,
-                                    database = appDatabase
+                                    database = appDatabase,
+                                    viewModel = appsViewModel
                                 )
                             }
                             composable(Route.AddApp.path) { backStackEntry ->
@@ -129,7 +136,6 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 val packageName: String? = backStackEntry.arguments?.getString("packageName")
-                                val packageManager = LocalContext.current.packageManager
                                 val appsManager = AppsManager(packageManager)
 
                                 if (packageName == null) {
@@ -151,7 +157,6 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 val packageName: String? = backStackEntry.arguments?.getString("packageName")
-                                val packageManager = LocalContext.current.packageManager
                                 val appsManager = AppsManager(packageManager)
 
                                 if (packageName == null) {
@@ -211,7 +216,8 @@ class MainActivity : ComponentActivity() {
                                 }
                                 CategoriesPage(
                                     navController = navController,
-                                    database = appDatabase
+                                    database = appDatabase,
+                                    viewModel = categoriesViewModel
                                 )
                             }
                             composable(Route.Appearance.path) {

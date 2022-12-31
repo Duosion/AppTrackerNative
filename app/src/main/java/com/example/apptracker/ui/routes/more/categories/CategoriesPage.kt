@@ -32,6 +32,7 @@ fun CategoriesPage(
     viewModel: CategoriesViewModel = CategoriesViewModel(database)
 ) {
     val screenState by viewModel.state.collectAsState()
+    val categories by screenState.categories.collectAsState(initial = listOf())
 
     var addCategoryDialogEnabled by remember { mutableStateOf(false) }
     var editNameDialogState by remember { mutableStateOf(CategoryDialogState()) }
@@ -115,7 +116,7 @@ fun CategoriesPage(
                 .padding(10.dp)
                 .fillMaxSize()
         ) {
-            if (screenState.categories.isEmpty()) {
+            if (categories.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -128,11 +129,8 @@ fun CategoriesPage(
                     modifier = Modifier
                         .fillMaxSize(),
                 ) {
-                    val categories = screenState.categories
                     val length = categories.count()
-
                     itemsIndexed(categories, key = { _, it -> it.id }) { index, it ->
-                        println("${it.id}, ${it.name}, ${it.position}")
                         Row(
                             modifier = Modifier.animateItemPlacement()
                         ) {

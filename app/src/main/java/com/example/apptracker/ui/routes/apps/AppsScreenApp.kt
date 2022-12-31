@@ -8,6 +8,5 @@ data class AppsScreenApp(
     val trackedApp: TrackedApp,
     val appInfo: ApplicationInfo? = null,
     val label: String? = null,
-    val icon: Drawable? = null,
-    val isDummy: Boolean = false,
+    val icon: Drawable? = null
 )
