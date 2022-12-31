@@ -1,5 +1,10 @@
 package com.example.apptracker.ui.routes.apps
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.provider.Settings
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,25 +16,66 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.util.data.AppDatabase
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.res.painterResource
+import androidx.core.content.ContextCompat
+import com.example.apptracker.ui.routes.settings.SettingsListItemCard
+import com.example.apptracker.util.navigation.Route
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalPagerApi::class)
 @Composable
 fun AppsPage(
     navController: NavController,
     database: AppDatabase,
-    viewModel: AppsViewModel = AppsViewModel(database)
+    context: Context = LocalContext.current,
+    packageManager: PackageManager = LocalContext.current.packageManager,
+    viewModel: AppsViewModel = AppsViewModel(database, packageManager)
 ) {
     val screenState by viewModel.state.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    var appsInfoDialogState by remember { mutableStateOf(AppsInfoDialogState()) }
+
+
+    when {
+        appsInfoDialogState.enabled && appsInfoDialogState.app != null -> {
+            val app = appsInfoDialogState.app
+            AppInfoDialog(
+                onDismissRequest = { appsInfoDialogState = AppsInfoDialogState() },
+                app = app!!,
+                onOpenClick = {
+                    val intent = context.packageManager.getLaunchIntentForPackage(app.trackedApp.packageName)
+                    if (intent != null) {
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        ContextCompat.startActivity(context, intent, null)
+                    }
+                    // close dialog
+                    appsInfoDialogState = AppsInfoDialogState()
+                },
+                onSettingsClick = {
+                    navController.navigate("${Route.EditApp.argumentlessPath}${app.trackedApp.packageName}") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                    appsInfoDialogState = AppsInfoDialogState()
+                }
+            )
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -45,11 +91,11 @@ fun AppsPage(
         ) {
             val pagerState = rememberPagerState()
             val categories = screenState.categories
-            val trackedApps = screenState.trackedApps
-            val coroutineScope = rememberCoroutineScope()
+            val apps = screenState.apps
 
-            val groupedApps = trackedApps.groupBy { trackedApp ->
-                val category = categories.find { it.id == trackedApp.categoryId }
+
+            val groupedApps = apps.groupBy { app ->
+                val category = categories.find { it.id == app.trackedApp.categoryId }
                 category?.id ?: 1
             }
 
@@ -109,25 +155,16 @@ fun AppsPage(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp),
                     ) {
-                        items(items, key = { it.packageName }) {
-                            Card(
-                                modifier = Modifier
-                                    .padding(bottom = 10.dp)
-                                    .height(70.dp)
-                                    .fillMaxWidth(),
+                        items(items, key = { it.trackedApp.packageName }) {
+                            AppCard(
+                                app = it,
                                 onClick = {
-
-                                }
-                            ) {
-                                ListItem(
-                                    modifier = Modifier.fillMaxSize(),
-                                    headlineText = { Text(it.packageName) },
-                                    leadingContent = { },
-                                    colors = ListItemDefaults.colors(
-                                        containerColor = Color(0, 0, 0, 0)
+                                    appsInfoDialogState = AppsInfoDialogState(
+                                        enabled = true,
+                                        app = it,
                                     )
-                                )
-                            }
+                                }
+                            )
                         }
                     }
                 }
@@ -136,3 +173,117 @@ fun AppsPage(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppCard(
+    app: AppsScreenApp,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(bottom = 10.dp)
+            .height(70.dp)
+            .fillMaxWidth(),
+        onClick = onClick
+    ) {
+        AppListItem(app)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppListItem(
+    app: AppsScreenApp
+) {
+    val label = app.label
+    ListItem(
+        modifier = Modifier.fillMaxSize(),
+        headlineText = { Text(label) },
+        leadingContent = {
+            Image(
+                modifier = Modifier.size(48.dp),
+                painter = rememberDrawablePainter(drawable = app.icon),
+                contentDescription = label,
+                contentScale = ContentScale.FillHeight,
+            )
+        },
+        trailingContent = {
+          Checkbox(
+              checked = app.trackedApp.openedToday,
+              onCheckedChange = {}
+          )
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent
+        )
+    )
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun AppInfoDialog(
+    onDismissRequest: () -> Unit,
+    app: AppsScreenApp,
+    onOpenClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    // Visibility state for the dialog which will trigger it only once when called
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val label = app.label
+                Spacer(modifier = Modifier.padding(bottom = 30.dp))
+                Image(
+                    modifier = Modifier.size(48.dp),
+                    painter = rememberDrawablePainter(drawable = app.icon),
+                    contentDescription = label,
+                    contentScale = ContentScale.FillHeight,
+                )
+                Spacer(modifier = Modifier.padding(bottom = 5.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.padding(bottom = 10.dp))
+                AppInfoDialogCard(
+                    icon = R.drawable.open_icon,
+                    text = R.string.apps_info_dialog_open_app_headline,
+                    onClick = onOpenClick
+                )
+                AppInfoDialogCard(
+                    icon = R.drawable.settings_icon,
+                    text = R.string.apps_info_dialog_settings_headline,
+                    onClick = onSettingsClick
+                )
+            }
+        },
+        confirmButton = {}
+    )
+}
+
+@Composable
+fun AppInfoDialogCard(
+    icon: Int,
+    text: Int,
+    onClick: () -> Unit
+) {
+    SettingsListItemCard(
+        leadingContent = {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = stringResource(id = text)
+            )
+        },
+        headlineText = {
+            ResourceText(text)
+        },
+        onClick = onClick
+    )
+}
+

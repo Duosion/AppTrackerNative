@@ -20,7 +20,7 @@ class CategoriesRepository(
             return items + listOf(newCategory)
         }
 
-        return items.dropWhile { it.hidden && !showHidden }.sortedBy { it.position }
+        return items.filterNot { it.hidden && !showHidden }.sortedBy { it.position }
     }
 
     fun addCategory(category: Category) {

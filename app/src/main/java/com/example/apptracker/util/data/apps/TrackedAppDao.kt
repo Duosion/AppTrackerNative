@@ -1,9 +1,6 @@
 package com.example.apptracker.util.data.apps
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface TrackedAppDao {
@@ -15,4 +12,10 @@ interface TrackedAppDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg trackedApp: TrackedApp)
+
+    @Update
+    fun update(trackedApp: TrackedApp)
+
+    @Delete
+    fun delete(trackedApp: TrackedApp)
 }

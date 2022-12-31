@@ -7,6 +7,8 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.apptracker.util.apps.AppsManager
+import com.example.apptracker.util.data.AppDatabase
+import com.example.apptracker.util.data.apps.TrackedAppDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,11 +19,12 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 class AddAppsViewModel(
-    packageManager: PackageManager
+    private val packageManager: PackageManager,
+    database: AppDatabase
 ) : ViewModel() {
 
-    private val _packageManager = packageManager
     private val appsManager = AppsManager(packageManager)
+    private val trackedAppDao = database.trackedAppDao()
 
     private var _appsState = MutableStateFlow(AddAppsScreenState())
     val state: StateFlow<AddAppsScreenState> = _appsState.asStateFlow()
@@ -40,9 +43,9 @@ class AddAppsViewModel(
 
     private fun getPackageInfo(packageName: String): PackageInfo {
         return if (Build.VERSION.SDK_INT >= 33) {
-            _packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
         } else {
-            _packageManager.getPackageInfo(packageName, 0)
+            packageManager.getPackageInfo(packageName, 0)
         }
     }
 
@@ -51,7 +54,8 @@ class AddAppsViewModel(
         withContext(Dispatchers.IO) {
             _appsState.update {
                 it.copy(
-                    apps = getFilteredApps(appsManager.getApps())
+                    apps = getFilteredApps(appsManager.getApps()),
+                    trackedApps = trackedAppDao.getAll()
                 )
             }
             setStateLoading(false)
@@ -64,7 +68,7 @@ class AddAppsViewModel(
 
         val queryString = queryState.query
         toFilter.forEach { info ->
-            if (queryString == "" || (info.loadLabel(_packageManager).toString()).contains(
+            if (queryString == "" || (info.loadLabel(packageManager).toString()).contains(
                     other = queryString,
                     ignoreCase = true
                 )
@@ -75,7 +79,7 @@ class AddAppsViewModel(
 
         return when (queryState.sortMode) {
             SortFunction.Name -> {
-                filtered.sortedBy { it.loadLabel(_packageManager).toString() }
+                filtered.sortedBy { it.loadLabel(packageManager).toString() }
             }
             SortFunction.Size -> {
                 filtered.sortedByDescending {

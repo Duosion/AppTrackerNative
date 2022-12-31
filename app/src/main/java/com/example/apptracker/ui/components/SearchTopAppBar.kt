@@ -43,15 +43,15 @@ fun SearchTopAppBar(
     var sortDialogOpen by remember { mutableStateOf(false) }
     var selectedSortMode by remember { mutableStateOf(AddAppsViewQueryState().sortMode) }
 
+    fun collapseSearch() {
+        isSearchFocused = false
+        searchQuery = "" // reset query
+    }
+
     if (isSearchFocused) {
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()
         }
-    }
-
-    fun collapseSearch() {
-        isSearchFocused = false
-        searchQuery = "" // reset query
     }
 
     if (sortDialogOpen) {

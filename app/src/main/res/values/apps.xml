@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="apps_empty_list_text">Add a tracked app to begin.</string>
+    <string name="apps_info_dialog_open_app_headline">Open app</string>
+    <string name="apps_info_dialog_settings_headline">App settings</string>
+
+    <string name="apps_edit_app_title">Edit App</string>
+    <string name="apps_edit_app_delete_confirm_dialog_title">Delete app</string>
+    <string name="apps_edit_app_delete_confirm_dialog_content">Are you sure that you want to delete this tracked app?</string>
+    <string name="apps_edit_app_delete_confirm_dialog_confirm">Delete</string>
+    <string name="apps_edit_app_delete_confirm_dialog_cancel">Cancel</string>
 
     <string name="apps_add_app_title">Add App</string>
     <string name="apps_add_app_submit_button">Add</string>
     <string name="apps_add_app_day_start_headline">Day Start</string>
     <string name="apps_add_app_day_start_time_pattern">h:mm a</string>
-    <string name="apps_add_app_day_start_dialog_title">Select day start time.</string>
+    <string name="apps_add_app_day_start_dialog_title">Select day start time</string>
     <string name="apps_add_app_day_start_utc_headline">Day start is in UTC</string>
     <string name="apps_add_app_category_headline">Category</string>
     <string name="apps_add_app_category_dialog_headline">Select category</string>
+    <string name="apps_add_app_reminder_notification_headline">Reminder Notification</string>
+    <string name="apps_add_app_reminder_notification_supporting">Send a notification before Day Start.</string>
+    <string name="apps_add_app_reminder_offset_headline">Reminder Offset</string>
+    <string name="apps_add_app_reminder_offset_headline_dialog_name">Select an offset</string>
+    <string name="apps_add_app_reminder_offset_custom_offset_headline">Custom Offset</string>
+    <string name="apps_add_app_reminder_offset_custom_offset_dialog_title">Select reminder time</string>
 
     <string name="apps_add_app_reminder_offset_no_offset_name">No offset</string>
     <string name="apps_add_app_reminder_offset_fifteen_minutes_name">15 minutes</string>

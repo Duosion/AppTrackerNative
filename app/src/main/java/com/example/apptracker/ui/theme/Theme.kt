@@ -67,14 +67,14 @@ fun AppTrackerTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        ThemeValues.GREENAPPLE -> if (darkTheme) darkGreenAppleColorScheme else lightGreenAppleColorScheme
+        ThemeValues.GREEN_APPLE -> if (darkTheme) darkGreenAppleColorScheme else lightGreenAppleColorScheme
         ThemeValues.LAVENDER -> if (darkTheme) darkLavenderColorScheme else lightLavenderColorScheme
-        ThemeValues.MIDNIGHTDUSK -> if (darkTheme) darkMidnightDuskColorScheme else lightMidnightDuskColorScheme
+        ThemeValues.MIDNIGHT_DUSK -> if (darkTheme) darkMidnightDuskColorScheme else lightMidnightDuskColorScheme
         ThemeValues.STRAWBERRY -> if (darkTheme) darkStrawberryColorScheme else lightStrawberryColorScheme
         ThemeValues.TAKO -> if (darkTheme) darkTakoColorScheme else lightTakoColorScheme
-        ThemeValues.TEALTURQUOISE -> if (darkTheme) darkTealTurquoiseColorScheme else lightTealTurquoiseColorScheme
-        ThemeValues.TIDALWAVE -> if (darkTheme) darkTidalWaveColorScheme else lightTidalWaveColorScheme
-        ThemeValues.YINYANG -> if (darkTheme) darkYinYangColorScheme else lightYinYangColorScheme
+        ThemeValues.TEAL_TURQUOISE -> if (darkTheme) darkTealTurquoiseColorScheme else lightTealTurquoiseColorScheme
+        ThemeValues.TIDAL_WAVE -> if (darkTheme) darkTidalWaveColorScheme else lightTidalWaveColorScheme
+        ThemeValues.YIN_YANG -> if (darkTheme) darkYinYangColorScheme else lightYinYangColorScheme
         ThemeValues.YOTSUBA -> if (darkTheme) darkYotsubaColorScheme else lightYotsubaColorScheme
     }
 

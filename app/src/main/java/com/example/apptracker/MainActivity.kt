@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -27,8 +28,11 @@ import com.example.apptracker.ui.routes.apps.AppsPage
 import com.example.apptracker.ui.routes.PackageUsagePermissionPage
 import com.example.apptracker.ui.routes.apps.addApp.AddAppPage
 import com.example.apptracker.ui.routes.apps.addApp.AddAppViewModel
+import com.example.apptracker.ui.routes.apps.addApp.AppPageMode
+import com.example.apptracker.ui.routes.apps.addApp.EditAppViewModel
 import com.example.apptracker.ui.routes.more.categories.CategoriesPage
 import com.example.apptracker.ui.routes.more.MorePage
+import com.example.apptracker.ui.routes.more.addApps.AddAppsViewModel
 import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
 import com.example.apptracker.ui.routes.settings.SettingsPage
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
@@ -61,11 +65,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun tryPermissions() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-            val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
-            // notification permission
-            tryNotificationPermissionAccess(applicationContext, requestPermissionLauncher)
-        }
+        val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        // notification permission
+        tryNotificationPermissionAccess(applicationContext, requestPermissionLauncher)
     }
 
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
@@ -78,6 +80,7 @@ class MainActivity : ComponentActivity() {
             val appDatabase = getDatabase(applicationContext)
 
             val appearanceViewModel = AppearanceViewModel(appDatabase)
+            val addAppsViewModel = AddAppsViewModel(LocalContext.current.packageManager, appDatabase)
 
             AppTrackerTheme(
                 database = appDatabase,
@@ -102,7 +105,7 @@ class MainActivity : ComponentActivity() {
                     },
                     content = { padding ->
                         AnimatedNavHost(
-                            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
+                            modifier = Modifier.padding( bottom = padding.calculateBottomPadding() ),
                             navController = navController,
                             startDestination = if (packageUsagePermissionGranted) Route.Apps.path else Route.PackageUsagePermission.path,
                             enterTransition = { fadeInTransition },
@@ -121,6 +124,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(Route.AddApp.path) { backStackEntry ->
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+
                                 val packageName: String? = backStackEntry.arguments?.getString("packageName")
                                 val packageManager = LocalContext.current.packageManager
                                 val appsManager = AppsManager(packageManager)
@@ -132,9 +139,31 @@ class MainActivity : ComponentActivity() {
                                     AddAppPage(
                                         navController = navController,
                                         database = appDatabase,
-                                        packageManager = packageManager,
                                         appInfo = appInfo,
+                                        mode = AppPageMode.ADD,
                                         viewModel = AddAppViewModel(appDatabase, packageName)
+                                    )
+                                }
+                            }
+                            composable(Route.EditApp.path) { backStackEntry ->
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+
+                                val packageName: String? = backStackEntry.arguments?.getString("packageName")
+                                val packageManager = LocalContext.current.packageManager
+                                val appsManager = AppsManager(packageManager)
+
+                                if (packageName == null) {
+                                    navController.popBackStack()
+                                } else {
+                                    val appInfo = appsManager.getApp(packageName)
+                                    AddAppPage(
+                                        navController = navController,
+                                        database = appDatabase,
+                                        appInfo = appInfo,
+                                        mode = AppPageMode.EDIT,
+                                        viewModel = EditAppViewModel(appDatabase, packageName)
                                     )
                                 }
                             }
@@ -162,7 +191,9 @@ class MainActivity : ComponentActivity() {
                                 }
                                 //setSystemBarsAppearance()
                                 AddAppsPage(
-                                    navController = navController
+                                    navController = navController,
+                                    database = appDatabase,
+                                    viewModel = addAppsViewModel
                                 )
                             }
                             composable(Route.Settings.path) {

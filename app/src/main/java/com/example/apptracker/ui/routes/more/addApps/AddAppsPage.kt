@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.SearchTopAppBar
+import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.io.File
@@ -28,7 +29,8 @@ import java.io.File
 @Composable
 fun AddAppsPage(
     navController: NavController,
-    viewModel: AddAppsViewModel = AddAppsViewModel(LocalContext.current.packageManager)
+    database: AppDatabase,
+    viewModel: AddAppsViewModel = AddAppsViewModel(LocalContext.current.packageManager, database)
 ) {
     val screenState by viewModel.state.collectAsState()
 
@@ -82,13 +84,13 @@ fun AddAppsPage(
                     CircularProgressIndicator()
                 }
             } else {
-                val context = LocalContext.current
 
                 val sortMode = screenState.queryState.sortMode
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(screenState.apps) { info ->
+                    val apps = screenState.apps.filterNot { app -> screenState.trackedApps.find { it.packageName == app.packageName } != null }
+                    items(apps) { info ->
                         val channel = stringResource(id = R.string.notification_channel_id)
                         val label = info.loadLabel(packageManager).toString()
                         AddAppListEntry(
