@@ -156,15 +156,19 @@ fun AppsPage(
                         contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp),
                     ) {
                         items(items, key = { it.trackedApp.packageName }) {
-                            AppCard(
-                                app = it,
-                                onClick = {
-                                    appsInfoDialogState = AppsInfoDialogState(
-                                        enabled = true,
-                                        app = it,
-                                    )
-                                }
-                            )
+                            if (it.isDummy) {
+                                DummyAppCard()
+                            } else {
+                                AppCard(
+                                    app = it,
+                                    onClick = {
+                                        appsInfoDialogState = AppsInfoDialogState(
+                                            enabled = true,
+                                            app = it,
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -191,6 +195,16 @@ fun AppCard(
     }
 }
 
+@Composable
+fun DummyAppCard() {
+    Card(
+        modifier = Modifier
+            .padding(bottom = 10.dp)
+            .height(70.dp)
+            .fillMaxWidth(),
+    ) {}
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppListItem(
@@ -199,7 +213,7 @@ fun AppListItem(
     val label = app.label
     ListItem(
         modifier = Modifier.fillMaxSize(),
-        headlineText = { Text(label) },
+        headlineText = { Text(label!!) },
         leadingContent = {
             Image(
                 modifier = Modifier.size(48.dp),
@@ -240,14 +254,14 @@ fun AppInfoDialog(
                 val label = app.label
                 Spacer(modifier = Modifier.padding(bottom = 30.dp))
                 Image(
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(60.dp),
                     painter = rememberDrawablePainter(drawable = app.icon),
                     contentDescription = label,
                     contentScale = ContentScale.FillHeight,
                 )
                 Spacer(modifier = Modifier.padding(bottom = 5.dp))
                 Text(
-                    text = label,
+                    text = label!!,
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.padding(bottom = 10.dp))

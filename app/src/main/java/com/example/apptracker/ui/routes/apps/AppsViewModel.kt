@@ -32,6 +32,7 @@ class AppsViewModel(
 
     init {
         refreshCategories()
+        refreshDummyApps()
         refreshApps()
     }
 
@@ -40,6 +41,21 @@ class AppsViewModel(
             _screenState.update {
                 it.copy(
                     categories = categoriesRepository.getCategories(showHidden = true)
+                )
+            }
+        }
+    }
+
+    private fun refreshDummyApps() = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            _screenState.update {
+                it.copy(
+                    apps = trackedAppDao.getAll().map { trackedApp ->
+                        AppsScreenApp(
+                            trackedApp = trackedApp,
+                            isDummy = true
+                        )
+                    }
                 )
             }
         }
