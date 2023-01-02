@@ -19,6 +19,7 @@ import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
 import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.ui.components.TextDialog
+import com.example.apptracker.ui.components.TrackedAppLastOpenedText
 import com.example.apptracker.ui.routes.settings.DialogListItem
 import com.example.apptracker.ui.routes.settings.SettingsDialogListItemCard
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
@@ -111,7 +112,6 @@ fun AddAppPage(
             CircularProgressIndicator()
         }
     } else {
-
         Scaffold(
             topBar = {
                 BackTopAppBar(
@@ -174,6 +174,9 @@ fun AddAppPage(
                     text = appLabel,
                     style = MaterialTheme.typography.headlineSmall
                 )
+                if (mode == AppPageMode.EDIT) {
+                    TrackedAppLastOpenedText(trackedApp = trackedApp ?: defaultTrackedApp)
+                }
                 Spacer(modifier = Modifier.padding(bottom = 10.dp))
 
                 SettingsListItemCard(
@@ -195,7 +198,7 @@ fun AddAppPage(
                         )
                     },
                     onClick = {
-                        viewModel.setDayStartIsUTC(dayStartIsUTC)
+                        viewModel.setDayStartIsUTC(!dayStartIsUTC)
                     }
                 )
                 Divider()
@@ -257,7 +260,6 @@ fun AddAppPage(
                 if (categories.isNotEmpty()) {
                     val trackedAppCatId = trackedApp?.categoryId ?: defaultTrackedApp.categoryId
                     val selectedCategory = categories.find { it.id == trackedAppCatId } ?: categories.first()
-                    println(selectedCategory.name + " " + selectedCategory.position)
                     SettingsDialogListItemCard(
                         dialogTitle = R.string.apps_add_app_category_dialog_headline,
                         headlineText = { ResourceText(id = R.string.apps_add_app_category_headline) },

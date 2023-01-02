@@ -1,9 +1,11 @@
 package com.example.apptracker.ui.routes.apps
 
+import android.content.Context
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.apptracker.util.apps.AppsManager
+import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.categories.CategoriesRepository
 import kotlinx.coroutines.Dispatchers
@@ -12,8 +14,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AppsViewModel(
-    database: AppDatabase,
-    private val packageManager: PackageManager
+    private val database: AppDatabase,
+    private val packageManager: PackageManager,
+    private val trackedAppsManager: TrackedAppsManager
 ) : ViewModel() {
 
     private val categoriesRepository = CategoriesRepository(database.categoriesDao())
@@ -51,10 +54,16 @@ class AppsViewModel(
                                 label = appInfo.loadLabel(packageManager).toString(),
                                 icon = appInfo.loadIcon(packageManager)
                             )
-                        }
+                        }.sortedBy { app -> app.label }
                     }
                 )
             }
+        }
+    }
+
+    fun setAppOpenedStatus(appInfo: AppsScreenApp, isOpened: Boolean) = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            trackedAppsManager.setTrackedAppOpenedStatus(appInfo.trackedApp, isOpened)
         }
     }
 

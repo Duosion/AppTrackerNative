@@ -26,6 +26,8 @@ data class TrackedApp (
     var openedToday: Boolean = false,
     // the unix timestamp when this app was opened
     var openedTimestamp: Long = 0,
+    // the timestamp to ignore
+    var ignoreTimestamp: Long = 1,
     // how many days in a row has this app been opened without missing a day?
     var openStreak: Int = 0
 )

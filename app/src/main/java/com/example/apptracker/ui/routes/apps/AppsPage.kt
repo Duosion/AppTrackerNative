@@ -3,6 +3,7 @@ package com.example.apptracker.ui.routes.apps
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.text.RelativeDateTimeFormatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,14 +26,23 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.ResourceText
+import com.example.apptracker.ui.components.TrackedAppLastOpenedText
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
+import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
+import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalPagerApi::class)
@@ -42,7 +52,7 @@ fun AppsPage(
     database: AppDatabase,
     context: Context = LocalContext.current,
     packageManager: PackageManager = context.packageManager,
-    viewModel: AppsViewModel = AppsViewModel(database, packageManager)
+    viewModel: AppsViewModel
 ) {
     val screenState by viewModel.state.collectAsState()
     val apps by screenState.apps.collectAsState(initial = listOf())
@@ -163,6 +173,9 @@ fun AppsPage(
                                         enabled = true,
                                         app = it,
                                     )
+                                },
+                                onCheckedChange = { state ->
+                                    viewModel.setAppOpenedStatus(it, state)
                                 }
                             )
                         }
@@ -178,7 +191,8 @@ fun AppsPage(
 @Composable
 fun AppCard(
     app: AppsScreenApp,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -187,7 +201,10 @@ fun AppCard(
             .fillMaxWidth(),
         onClick = onClick
     ) {
-        AppListItem(app)
+        AppListItem(
+            app = app,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
 
@@ -204,7 +221,8 @@ fun DummyAppCard() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppListItem(
-    app: AppsScreenApp
+    app: AppsScreenApp,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     val label = app.label
     ListItem(
@@ -218,10 +236,13 @@ fun AppListItem(
                 contentScale = ContentScale.FillHeight,
             )
         },
+        supportingText = {
+            TrackedAppLastOpenedText(app.trackedApp)
+        },
         trailingContent = {
             Checkbox(
                 checked = app.trackedApp.openedToday,
-                onCheckedChange = {}
+                onCheckedChange = onCheckedChange
             )
         },
         colors = ListItemDefaults.colors(
@@ -260,6 +281,10 @@ fun AppInfoDialog(
                     text = label!!,
                     style = MaterialTheme.typography.titleLarge
                 )
+                TrackedAppLastOpenedText(
+                    trackedApp = app.trackedApp,
+                    style = MaterialTheme.typography.titleSmall
+                )
                 Spacer(modifier = Modifier.padding(bottom = 10.dp))
                 AppInfoDialogCard(
                     icon = R.drawable.open_icon,
@@ -296,4 +321,6 @@ fun AppInfoDialogCard(
         onClick = onClick
     )
 }
+
+
 

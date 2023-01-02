@@ -1,7 +1,9 @@
 package com.example.apptracker.ui.routes.apps.addApp
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.categories.CategoriesRepository
@@ -12,7 +14,7 @@ import kotlinx.coroutines.withContext
 import java.time.LocalTime
 
 class EditAppViewModel(
-    database: AppDatabase,
+    private val database: AppDatabase,
     private val packageName: String
 ) : IAppPageViewModel, ViewModel() {
 
@@ -61,11 +63,12 @@ class EditAppViewModel(
 
     override fun setDayStartIsUTC(value: Boolean) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            _screenState.value.trackedApp.first()?.let {
+            _screenState.value.trackedApp.firstOrNull()?.let {
                 trackedAppDao.update(
                     it.copy(
                         dayStartIsUTC = value
-                    ))
+                    )
+                )
             }
         }
     }

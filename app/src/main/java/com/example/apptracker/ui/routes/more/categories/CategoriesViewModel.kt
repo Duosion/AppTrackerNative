@@ -29,7 +29,7 @@ class CategoriesViewModel (
     }
 
     private fun refresh() = viewModelScope.launch {
-        _screenState.value = CategoriesScreenState(isLoading = true)
+        //_screenState.value = CategoriesScreenState(isLoading = true)
         withContext(Dispatchers.IO) {
             _screenState.value = CategoriesScreenState(
                 categories = categoriesRepository.getCategories()

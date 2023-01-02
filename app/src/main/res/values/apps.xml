@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="apps_opened_status_worker_tag">openedStatusWorker</string>
+
     <string name="apps_empty_list_text">Add a tracked app to begin.</string>
     <string name="apps_info_dialog_open_app_headline">Open app</string>
     <string name="apps_info_dialog_settings_headline">App settings</string>
@@ -30,4 +32,8 @@
     <string name="apps_add_app_reminder_offset_thirty_minutes_name">30 minutes</string>
     <string name="apps_add_app_reminder_offset_one_hour_name">1 hour</string>
     <string name="apps_add_app_reminder_offset_custom_name">Custom</string>
+
+    <string name="apps_tracked_app_last_opened_default">Not opened</string>
+    <string name="apps_tracked_app_last_opened_opened_prefix">Opened</string>
+    <string name="apps_tracked_app_last_opened_prefix">Last opened</string>
 </resources>
