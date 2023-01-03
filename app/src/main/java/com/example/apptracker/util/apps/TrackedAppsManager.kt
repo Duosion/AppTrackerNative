@@ -33,7 +33,7 @@ class TrackedAppsManager(
 
     private fun getUsageStats(): Map<String, List<UsageStats>> {
         val timeNow = LocalDateTime.now()
-        val begin = timeNow.minusDays(2L)
+        val begin = timeNow.minusDays(1L)
 
         val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_WEEKLY, begin.toEpochSecond(ZoneOffset.UTC) * 1000, timeNow.toEpochSecond(ZoneOffset.UTC) * 1000)
 
@@ -46,9 +46,11 @@ class TrackedAppsManager(
 
     fun setTrackedAppOpenedStatus(trackedApp: TrackedApp, isOpened: Boolean = true) {
         if (isOpened) {
-            val zoneOffset = if (trackedApp.dayStartIsUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
+            val useUTC = trackedApp.dayStartIsUTC
+            val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
+            val zoneId = if (useUTC) ZoneId.of("UTC") else ZoneId.systemDefault()
             trackedAppDao.update(trackedApp.copy(
-                openedTimestamp = LocalDateTime.of(LocalDate.now(zoneOffset), LocalTime.of(trackedApp.dayStartHour, trackedApp.dayStartMinute)).toEpochSecond(zoneOffset),
+                openedTimestamp = LocalDateTime.now(zoneId).toEpochSecond(zoneOffset),
                 ignoreTimestamp = 0,
                 openedToday = true
             ))
@@ -67,6 +69,7 @@ class TrackedAppsManager(
         val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
 
         val lastDateOpened = LocalDateTime.ofEpochSecond(if (trackedApp.ignoreTimestamp == lastTimeUsed) 0 else lastTimeUsed, 0, zoneOffset)
+
         val dayStartDate = LocalDateTime.of(LocalDate.now(zoneOffset), LocalTime.of(trackedApp.dayStartHour, trackedApp.dayStartMinute)).let {
             if (useUTC && it > LocalDateTime.now(ZoneId.of("UTC"))) {
                 it.minusDays(1L)

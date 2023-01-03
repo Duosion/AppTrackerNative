@@ -24,6 +24,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.apptracker.ui.routes.PackageUsagePermissionPage
@@ -48,6 +49,7 @@ import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.getDatabase
 import com.example.apptracker.util.navigation.MainNavItem
 import com.example.apptracker.util.navigation.Route
+import com.example.apptracker.util.notifications.AppNotificationChannel
 import com.example.apptracker.util.permissions.isPackageUsagePermissionAccessGranted
 import com.example.apptracker.util.permissions.tryNotificationPermissionAccess
 import com.example.apptracker.util.workers.TrackedAppOpenedStatusWorker
@@ -91,8 +93,7 @@ class MainActivity : ComponentActivity() {
             .build()
 
         val workManager = WorkManager.getInstance(applicationContext)
-        workManager.cancelAllWorkByTag(openedStatusWorkerTag)
-        workManager.enqueue(openedStatusWorker)
+        workManager.enqueueUniquePeriodicWork(openedStatusWorkerTag, ExistingPeriodicWorkPolicy.KEEP, openedStatusWorker)
     }
 
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
@@ -117,7 +118,15 @@ class MainActivity : ComponentActivity() {
 
             val appearanceViewModel = AppearanceViewModel(appDatabase)
             val addAppsViewModel = AddAppsViewModel(packageManager, appDatabase)
-            val appsViewModel = AppsViewModel(appDatabase, packageManager, trackedAppsManager)
+            val appsViewModel = AppsViewModel(
+                database = appDatabase,
+                packageManager = packageManager,
+                trackedAppsManager = trackedAppsManager,
+                notificationChannel = AppNotificationChannel(
+                    stringResource(id = R.string.notification_channel_id),
+                    applicationContext
+                ),
+            )
             val categoriesViewModel = CategoriesViewModel(appDatabase)
 
             // update opened status
@@ -186,7 +195,6 @@ class MainActivity : ComponentActivity() {
                                 //setSystemBarsAppearance()
                                 AppsPage(
                                     navController = navController,
-                                    database = appDatabase,
                                     viewModel = appsViewModel
                                 )
                             }

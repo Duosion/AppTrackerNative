@@ -7,6 +7,7 @@ import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.categories.CategoriesRepository
+import com.example.apptracker.util.notifications.AppNotificationChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -90,7 +91,8 @@ class EditAppViewModel(
                 trackedAppDao.update(
                     it.copy(
                         reminderNotification = value
-                    ))
+                    )
+                )
             }
         }
     }

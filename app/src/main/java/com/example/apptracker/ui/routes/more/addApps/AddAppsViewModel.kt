@@ -52,7 +52,7 @@ class AddAppsViewModel(
             _appsState.update {
                 it.copy(
                     apps = getFilteredApps(appsManager.getApps()),
-                    trackedApps = trackedAppDao.getAll().first()
+                    trackedApps = trackedAppDao.getAll()
                 )
             }
             setStateLoading(false)

@@ -28,14 +28,14 @@ import com.example.apptracker.ui.routes.more.addApps.SortFunction
 fun SearchTopAppBar(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior? = null,
     onSearch: (String) -> Unit,
     onSortModeChanged: (SortFunction) -> Unit,
-    focusRequester: FocusRequester = remember { FocusRequester() }
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    onNavigationIconClick: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearchFocused by remember { mutableStateOf(false) }
@@ -46,6 +46,7 @@ fun SearchTopAppBar(
     fun collapseSearch() {
         isSearchFocused = false
         searchQuery = "" // reset query
+        onSearch(searchQuery)
     }
 
     if (isSearchFocused) {
@@ -153,7 +154,23 @@ fun SearchTopAppBar(
             }
         },
         modifier = modifier,
-        navigationIcon = navigationIcon,
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    if (isSearchFocused) {
+                        collapseSearch()
+
+                    } else {
+                        onNavigationIconClick()
+                    }
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.back_icon),
+                    contentDescription = stringResource(id = R.string.back_button_description)
+                )
+            }
+        },
         actions = {
             if (!isSearchFocused) {
                 IconButton(

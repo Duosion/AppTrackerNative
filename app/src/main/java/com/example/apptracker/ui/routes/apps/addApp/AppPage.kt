@@ -28,7 +28,12 @@ import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.apps.TrackedAppReminderOffset
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.marosseleng.compose.material3.datetimepickers.time.ui.dialog.TimePickerDialog
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +67,8 @@ fun AddAppPage(
         trackedApp?.reminderOffsetHour ?: defaultTrackedApp.reminderOffsetHour,
         trackedApp?.reminderOffsetMinute ?: defaultTrackedApp.reminderOffsetMinute
     )
+
+    val dateTimeFormatter = DateTimeFormatter.ofPattern(stringResource(id = R.string.apps_add_app_day_start_time_pattern))
 
     when {
         timePickerEnabled -> {
@@ -178,17 +185,18 @@ fun AddAppPage(
                     TrackedAppLastOpenedText(trackedApp = trackedApp ?: defaultTrackedApp)
                 }
                 Spacer(modifier = Modifier.padding(bottom = 10.dp))
-
+                val dayStartIsUTC = trackedApp?.dayStartIsUTC ?: defaultTrackedApp.dayStartIsUTC
                 SettingsListItemCard(
                     headlineText = { ResourceText(id = R.string.apps_add_app_day_start_headline) },
                     supportingText = {
-                        Text(dayStart.format(DateTimeFormatter.ofPattern(stringResource(id = R.string.apps_add_app_day_start_time_pattern))))
+                        val suffix = if (dayStartIsUTC) " UTC" else ""
+                        Text(dayStart.format(dateTimeFormatter) + suffix)
                     },
                     onClick = {
                         timePickerEnabled = true
                     }
                 )
-                val dayStartIsUTC = trackedApp?.dayStartIsUTC ?: defaultTrackedApp.dayStartIsUTC
+
                 SettingsListItemCard(
                     headlineText = { ResourceText(id = R.string.apps_add_app_day_start_utc_headline) },
                     trailingContent = {
@@ -201,6 +209,15 @@ fun AddAppPage(
                         viewModel.setDayStartIsUTC(!dayStartIsUTC)
                     }
                 )
+                if(dayStartIsUTC) {
+                    val zoned = dayStart.atOffset(ZoneOffset.UTC).withOffsetSameInstant(ZonedDateTime.now().offset)
+                    val formattedDate = zoned.format(dateTimeFormatter)
+                    ListItem(
+                        headlineText = {
+                            Text(stringResource(id = R.string.apps_add_app_day_start_utc_conversion_headline).format(formattedDate))
+                        }
+                    )
+                }
                 Divider()
                 // reminder notification stuff
                 val reminderNotification = trackedApp?.reminderNotification ?: defaultTrackedApp.reminderNotification
@@ -243,11 +260,7 @@ fun AddAppPage(
                             headlineText = { ResourceText(id = R.string.apps_add_app_reminder_offset_custom_offset_headline) },
                             supportingText = {
                                 Text(
-                                    customOffsetTime.format(
-                                        DateTimeFormatter.ofPattern(
-                                            stringResource(id = R.string.apps_add_app_day_start_time_pattern)
-                                        )
-                                    )
+                                    customOffsetTime.format(dateTimeFormatter)
                                 )
                             },
                             onClick = {

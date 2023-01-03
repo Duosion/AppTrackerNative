@@ -18,6 +18,7 @@
     <string name="apps_add_app_day_start_time_pattern">h:mm a</string>
     <string name="apps_add_app_day_start_dialog_title">Select day start time</string>
     <string name="apps_add_app_day_start_utc_headline">Day start is in UTC</string>
+    <string name="apps_add_app_day_start_utc_conversion_headline">Day start in local time: %s</string>
     <string name="apps_add_app_category_headline">Category</string>
     <string name="apps_add_app_category_dialog_headline">Select category</string>
     <string name="apps_add_app_reminder_notification_headline">Reminder Notification</string>

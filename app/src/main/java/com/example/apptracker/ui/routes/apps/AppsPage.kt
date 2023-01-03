@@ -49,9 +49,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun AppsPage(
     navController: NavController,
-    database: AppDatabase,
     context: Context = LocalContext.current,
-    packageManager: PackageManager = context.packageManager,
     viewModel: AppsViewModel
 ) {
     val screenState by viewModel.state.collectAsState()
@@ -61,6 +59,8 @@ fun AppsPage(
     val coroutineScope = rememberCoroutineScope()
     var appsInfoDialogState by remember { mutableStateOf(AppsInfoDialogState()) }
 
+    val pagerState = rememberPagerState()
+    viewModel.syncPager(pagerState)
 
     when {
         appsInfoDialogState.enabled && appsInfoDialogState.app != null -> {
@@ -101,8 +101,6 @@ fun AppsPage(
                 .padding(top = padding.calculateTopPadding())
                 .fillMaxSize()
         ) {
-            val pagerState = rememberPagerState()
-
 
             val groupedApps = apps.groupBy { app ->
                 val category = categories.find { it.id == app.trackedApp.categoryId }
@@ -150,6 +148,8 @@ fun AppsPage(
                 val category = categories[page]
                 val categoryId = category.id
                 val items = groupedApps.getOrDefault(categoryId, listOf())
+
+                viewModel.syncTabState(pagerState)
 
                 if (items.isEmpty() && (page == 0)) {
                     // only show empty list text on the first page
@@ -199,23 +199,16 @@ fun AppCard(
             .padding(bottom = 10.dp)
             .height(70.dp)
             .fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
     ) {
         AppListItem(
             app = app,
             onCheckedChange = onCheckedChange
         )
     }
-}
-
-@Composable
-fun DummyAppCard() {
-    Card(
-        modifier = Modifier
-            .padding(bottom = 10.dp)
-            .height(70.dp)
-            .fillMaxWidth(),
-    ) {}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

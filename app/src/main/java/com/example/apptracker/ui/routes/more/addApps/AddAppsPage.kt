@@ -25,7 +25,7 @@ import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddAppsPage(
     navController: NavController,
@@ -33,6 +33,7 @@ fun AddAppsPage(
     viewModel: AddAppsViewModel = AddAppsViewModel(LocalContext.current.packageManager, database)
 ) {
     val screenState by viewModel.state.collectAsState()
+    val trackedApps by screenState.trackedApps.collectAsState(initial = listOf())
 
     fun search(query: String) {
         viewModel.setQueryString(query)
@@ -46,17 +47,8 @@ fun AddAppsPage(
         topBar = {
             SearchTopAppBar(
                 title = { Text(stringResource(id = R.string.more_add_app_button_headline)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.back_icon),
-                            contentDescription = stringResource(id = R.string.back_button_description)
-                        )
-                    }
+                onNavigationIconClick = {
+                    navController.popBackStack()
                 },
                 onSearch = { query ->
                     search(query)
@@ -84,14 +76,12 @@ fun AddAppsPage(
                     CircularProgressIndicator()
                 }
             } else {
-
                 val sortMode = screenState.queryState.sortMode
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    val apps = screenState.apps.filterNot { app -> screenState.trackedApps.find { it.packageName == app.packageName } != null }
+                    val apps = screenState.apps.filterNot { app -> trackedApps.find { it.packageName == app.packageName } != null }
                     items(apps) { info ->
-                        val channel = stringResource(id = R.string.notification_channel_id)
                         val label = info.loadLabel(packageManager).toString()
                         AddAppListEntry(
                             appInfo = info,
