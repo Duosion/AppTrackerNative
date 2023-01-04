@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.categories.CategoriesRepository
+import com.example.apptracker.util.notifications.AppNotificationChannel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -14,7 +14,8 @@ import java.time.LocalTime
 
 class AddAppViewModel(
     database: AppDatabase,
-    packageName: String
+    packageName: String,
+    private val notificationChannel: AppNotificationChannel
 ) : IAppPageViewModel, ViewModel() {
 
     private val categoriesRepository = CategoriesRepository(database.categoriesDao())
@@ -103,6 +104,7 @@ class AddAppViewModel(
             val toAdd = _screenState.value.trackedApp.first()
             if (toAdd != null) {
                 trackedAppDao.insert(toAdd)
+                notificationChannel.scheduleTrackedAppReminder(toAdd)
             }
         }
     }

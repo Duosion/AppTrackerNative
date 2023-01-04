@@ -15,19 +15,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.apptracker.ui.routes.PackageUsagePermissionPage
+import com.example.apptracker.ui.routes.PermissionPage
 import com.example.apptracker.ui.routes.apps.AppsPage
 import com.example.apptracker.ui.routes.apps.AppsViewModel
 import com.example.apptracker.ui.routes.apps.addApp.AddAppPage
@@ -57,6 +54,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.firstOrNull
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -115,16 +113,16 @@ class MainActivity : ComponentActivity() {
 
             val trackedAppsManager = TrackedAppsManager(appDatabase, context)
 
+            val notificationChannel = AppNotificationChannel(
+                applicationContext
+            )
+
             val appearanceViewModel = AppearanceViewModel(appDatabase)
             val addAppsViewModel = AddAppsViewModel(packageManager, appDatabase)
             val appsViewModel = AppsViewModel(
                 database = appDatabase,
                 packageManager = packageManager,
                 trackedAppsManager = trackedAppsManager,
-                notificationChannel = AppNotificationChannel(
-                    stringResource(id = R.string.notification_channel_id),
-                    applicationContext
-                ),
             )
             val categoriesViewModel = CategoriesViewModel(appDatabase)
 
@@ -132,6 +130,10 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(context) {
                 withContext(Dispatchers.IO) {
                     trackedAppsManager.updateTrackedAppsOpenedStatus()
+                    // schedule reminders
+                    appDatabase.trackedAppDao().getAll().firstOrNull()?.let {
+                        notificationChannel.scheduleTrackedAppsReminders(it)
+                    }
                 }
             }
 
@@ -140,8 +142,7 @@ class MainActivity : ComponentActivity() {
                 viewModel = appearanceViewModel
             ) {
 
-                val packageUsagePermissionGranted =
-                    isPackageUsagePermissionAccessGranted(applicationContext)
+                val packageUsagePermissionGranted = isPackageUsagePermissionAccessGranted(applicationContext)
 
                 val transitionTweenTime = 350 // the transition tween time in ms
                 val fadeInTransition =
@@ -193,10 +194,9 @@ class MainActivity : ComponentActivity() {
                                     val appInfo = appsManager.getApp(packageName)
                                     AddAppPage(
                                         navController = navController,
-                                        database = appDatabase,
                                         appInfo = appInfo,
                                         mode = AppPageMode.ADD,
-                                        viewModel = AddAppViewModel(appDatabase, packageName)
+                                        viewModel = AddAppViewModel(appDatabase, packageName, notificationChannel),
                                     )
                                 }
                             }
@@ -215,10 +215,9 @@ class MainActivity : ComponentActivity() {
                                     val appInfo = appsManager.getApp(packageName)
                                     AddAppPage(
                                         navController = navController,
-                                        database = appDatabase,
                                         appInfo = appInfo,
                                         mode = AppPageMode.EDIT,
-                                        viewModel = EditAppViewModel(appDatabase, packageName)
+                                        viewModel = EditAppViewModel(appDatabase, packageName, notificationChannel)
                                     )
                                 }
                             }
@@ -235,7 +234,7 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
-                                PackageUsagePermissionPage(
+                                PermissionPage(
                                     navController = navController,
                                     context = applicationContext
                                 )

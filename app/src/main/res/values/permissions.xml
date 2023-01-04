@@ -1,6 +1,7 @@
 <resources>
     <string name="permission_notification_dialog_title">Notification Permission Required</string>
-    <string name="permission_package_usage_title">Package Usage Permission Required</string>
+    <string name="permission_package_usage_title">Permissions Required</string>
     <string name="permission_package_usage_description">This app requires access to the package usage permission in order to operate. \nPlease grant access to this permission to continue.</string>
+    <string name="permission_schedule_exact_alarms_warning">Inaccurate Reminder: You have not granted this app access to schedule exact alarms.</string>
     <string name="permission_package_usage_grant_button">Grant Access</string>
 </resources>

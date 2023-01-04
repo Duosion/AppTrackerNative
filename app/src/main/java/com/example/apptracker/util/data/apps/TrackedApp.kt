@@ -6,7 +6,9 @@ import androidx.room.PrimaryKey
 @Entity
 data class TrackedApp (
     // the package name of this app.
-    @PrimaryKey val packageName: String,
+    val packageName: String,
+    // the UID of the app this belongs to
+    @PrimaryKey(autoGenerate = true) val uid: Int = 0,
     // the hour when the day starts for this app.
     var dayStartHour: Int = 0,
     // the minute when the day starts for this app.

@@ -1,6 +1,5 @@
 package com.example.apptracker.ui.routes.apps
 
-import android.content.Context
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +8,6 @@ import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.categories.CategoriesRepository
 import com.example.apptracker.util.data.tabs.TabState
-import com.example.apptracker.util.notifications.AppNotificationChannel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +21,6 @@ class AppsViewModel(
     database: AppDatabase,
     private val packageManager: PackageManager,
     private val trackedAppsManager: TrackedAppsManager,
-    private val notificationChannel: AppNotificationChannel,
 ) : ViewModel() {
 
     private val categoriesRepository = CategoriesRepository(database.categoriesDao())
@@ -35,7 +32,7 @@ class AppsViewModel(
     val state: StateFlow<AppsScreenState> = _screenState.asStateFlow()
 
     init {
-        //refreshTabState()
+        refreshTabState()
         refreshCategories()
         refreshApps()
     }
@@ -67,11 +64,6 @@ class AppsViewModel(
                     apps = trackedAppDao.getAll().map { flow ->
                         flow.map { trackedApp ->
                             val appInfo = appsManager.getApp(trackedApp.packageName)
-
-                            if (trackedApp.reminderNotification) {
-                                notificationChannel.scheduleTrackedAppReminder(trackedApp)
-                            }
-
                             AppsScreenApp(
                                 trackedApp = trackedApp,
                                 appInfo = appInfo,

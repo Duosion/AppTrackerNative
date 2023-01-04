@@ -34,11 +34,9 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun AppsPage(
     navController: NavController,
@@ -51,6 +49,9 @@ fun AppsPage(
     
     val coroutineScope = rememberCoroutineScope()
     var appsInfoDialogState by remember { mutableStateOf(AppsInfoDialogState()) }
+
+    val pagerState = rememberPagerState()
+    viewModel.syncPager(pagerState)
 
     val lifeCycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifeCycleOwner) {
@@ -110,9 +111,6 @@ fun AppsPage(
                 val category = categories.find { it.id == app.trackedApp.categoryId }
                 category?.id ?: 1
             }
-
-            val pagerState = rememberPagerState()
-            viewModel.syncPager(pagerState)
 
             if (categories.count() > 1) {
                 ScrollableTabRow(
@@ -207,7 +205,9 @@ fun AppCard(
             .height(70.dp)
             .fillMaxWidth(),
         onClick = onClick,
-        colors = CardDefaults.cardColors(
+        colors = if (app.trackedApp.openedToday)
+            CardDefaults.cardColors()
+        else CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
     ) {

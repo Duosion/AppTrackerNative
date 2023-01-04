@@ -1,5 +1,5 @@
 <resources>
-    <string name="notification_channel_name">App Tracker Reminder</string>
+    <string name="notification_channel_name">Day Start Reminder</string>
     <string name="notification_channel_description">Reminds when an app hasn\'t been opened before its reset.</string>
     <string name="notification_channel_id">app_tracker_reminder</string>
 </resources>

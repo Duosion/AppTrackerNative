@@ -1,6 +1,9 @@
 package com.example.apptracker.ui.routes.apps.addApp
 
+import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
@@ -23,15 +27,12 @@ import com.example.apptracker.ui.components.TrackedAppLastOpenedText
 import com.example.apptracker.ui.routes.settings.DialogListItem
 import com.example.apptracker.ui.routes.settings.SettingsDialogListItemCard
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
-import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.apps.TrackedAppReminderOffset
+import com.example.apptracker.util.notifications.AppNotificationChannel
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.marosseleng.compose.material3.datetimepickers.time.ui.dialog.TimePickerDialog
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -40,17 +41,17 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AddAppPage(
     navController: NavController,
-    database: AppDatabase,
     appInfo: ApplicationInfo,
     mode: AppPageMode = AppPageMode.ADD,
-    viewModel: IAppPageViewModel = AddAppViewModel(database, appInfo.packageName)
+    viewModel: IAppPageViewModel
 ) {
     val defaultTrackedApp = TrackedApp(appInfo.packageName)
 
     val screenState by viewModel.state.collectAsState()
     val trackedApp by screenState.trackedApp.collectAsState(initial = defaultTrackedApp)
 
-    val packageManager = LocalContext.current.packageManager
+    val context = LocalContext.current
+    val packageManager = context.packageManager
     val appLabel = appInfo.loadLabel(packageManager).toString()
 
     var timePickerEnabled by remember { mutableStateOf(false) }
@@ -235,6 +236,24 @@ fun AddAppPage(
                     }
                 )
                 if (reminderNotification) {
+                    if (!AppNotificationChannel.canScheduleExactAlarms(context)) {
+                        SettingsListItemCard(
+                            headlineText = {
+                                ResourceText(
+                                    id = R.string.permission_schedule_exact_alarms_warning,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    ContextCompat.startActivity(context, intent, null)
+                                }
+                            }
+                        )
+                    }
+
                     val currentOffset = TrackedAppReminderOffset.fromId(trackedApp?.reminderOffset ?: defaultTrackedApp.reminderOffset)
                     // show offset picker
                     SettingsDialogListItemCard(

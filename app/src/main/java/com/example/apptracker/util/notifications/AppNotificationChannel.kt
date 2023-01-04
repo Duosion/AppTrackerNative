@@ -1,41 +1,52 @@
 package com.example.apptracker.util.notifications
 
-import android.app.PendingIntent
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Icon
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.TaskStackBuilder
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.IconCompat
-import androidx.core.graphics.drawable.toBitmap
-import androidx.work.Data
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.example.apptracker.R
 import com.example.apptracker.util.apps.AppsManager
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.apps.TrackedAppReminderOffset
-import com.example.apptracker.util.workers.TrackedAppOpenedStatusWorker
-import com.example.apptracker.util.workers.TrackedAppReminderWorker
+import com.example.apptracker.util.receivers.TrackedAppReminderAlarmReceiver
 import java.time.*
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
+import android.app.PendingIntent
+import android.os.Build
 
-// val channel = stringResource(id = R.string.notification_channel_id)
+
 class AppNotificationChannel(
-    private val channelId: String,
     private val context: Context
 ) {
-    private val workManager: WorkManager = WorkManager.getInstance(context)
+    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    //private val workManager: WorkManager = WorkManager.getInstance(context)
     private val packageManager = context.packageManager
+
+    private val channelId = context.getString(R.string.notification_channel_id)
 
     private val appsManager = AppsManager(packageManager)
 
+    private val canScheduleExactAlarms = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            alarmManager.canScheduleExactAlarms()
+        }
+        else -> true
+    }
+
+    private fun getPendingReminderIntent(trackedApp: TrackedApp): PendingIntent {
+        val alarmIntent = Intent(context, TrackedAppReminderAlarmReceiver::class.java)
+        alarmIntent.action = "reminder_alarm"
+        alarmIntent.putExtra("package_name",trackedApp.packageName)
+
+        return PendingIntent.getBroadcast(context, trackedApp.uid, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
 
     fun scheduleTrackedAppReminder(trackedApp: TrackedApp) {
+        // ensure that the reminder is enabled in the first place
+        if (!trackedApp.reminderNotification) { return }
+
         val useUTC = trackedApp.dayStartIsUTC
         val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
 
@@ -68,11 +79,27 @@ class AppNotificationChannel(
         }
 
         val secondsDifference = ChronoUnit.SECONDS.between(dateNow, reminderDate)
-        val packageName = trackedApp.packageName
+
+        val pendingAlarmIntent = getPendingReminderIntent(trackedApp)
+
+        alarmManager.cancel(pendingAlarmIntent)
+        if (canScheduleExactAlarms) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + secondsDifference * 1000,
+                pendingAlarmIntent
+            )
+        } else {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + secondsDifference * 1000,
+                pendingAlarmIntent
+            )
+        }
 
         //println("Schedule $packageName reminder for $secondsDifference seconds from now. Day start: $dayStartDate, reminder date: $reminderDate")
 
-        val workerData = Data.Builder()
+        /*val workerData = Data.Builder()
             .putString("package_name", packageName)
             .putString("notification_channel",channelId)
             .build()
@@ -83,7 +110,11 @@ class AppNotificationChannel(
             .setInitialDelay(secondsDifference, TimeUnit.SECONDS)
             .build()
 
-        workManager.enqueueUniquePeriodicWork(packageName, ExistingPeriodicWorkPolicy.REPLACE, reminderWorker)
+        workManager.enqueueUniquePeriodicWork(packageName, ExistingPeriodicWorkPolicy.REPLACE, reminderWorker)*/
+    }
+
+    fun cancelTrackedAppReminder(trackedApp: TrackedApp) {
+        alarmManager.cancel(getPendingReminderIntent(trackedApp))
     }
 
     fun sendTrackedAppReminder(trackedApp: TrackedApp) {
@@ -110,5 +141,25 @@ class AppNotificationChannel(
 
     }
 
+    fun scheduleTrackedAppsReminders(
+        trackedApps: List<TrackedApp>
+    ) = trackedApps.forEach {
+        scheduleTrackedAppReminder(it)
+    }
+
+    companion object {
+
+        fun canScheduleExactAlarms(
+            context: Context
+        ): Boolean {
+            return when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                    (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+                }
+                else -> true
+            }
+        }
+
+    }
 
 }

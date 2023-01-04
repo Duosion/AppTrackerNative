@@ -1,9 +1,7 @@
 package com.example.apptracker.ui.routes.apps.addApp
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.categories.CategoriesRepository
@@ -15,8 +13,9 @@ import kotlinx.coroutines.withContext
 import java.time.LocalTime
 
 class EditAppViewModel(
-    private val database: AppDatabase,
-    private val packageName: String
+    database: AppDatabase,
+    private val packageName: String,
+    private val notificationChannel: AppNotificationChannel
 ) : IAppPageViewModel, ViewModel() {
 
     private val categoriesRepository = CategoriesRepository(database.categoriesDao())
@@ -52,12 +51,13 @@ class EditAppViewModel(
 
     override fun setDayStartTime(time: LocalTime) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            _screenState.value.trackedApp.first()?.let {
+            _screenState.value.trackedApp.firstOrNull()?.let {
                 trackedAppDao.update(
                     it.copy(
                         dayStartHour = time.hour,
                         dayStartMinute = time.minute
-                    ))
+                    )
+                )
             }
         }
     }
@@ -65,11 +65,11 @@ class EditAppViewModel(
     override fun setDayStartIsUTC(value: Boolean) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             _screenState.value.trackedApp.firstOrNull()?.let {
-                trackedAppDao.update(
-                    it.copy(
-                        dayStartIsUTC = value
-                    )
+                val updated = it.copy(
+                    dayStartIsUTC = value
                 )
+                trackedAppDao.update(updated)
+                notificationChannel.scheduleTrackedAppReminder(updated)
             }
         }
     }
@@ -88,11 +88,15 @@ class EditAppViewModel(
     override fun setReminderNotification(value: Boolean) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             _screenState.value.trackedApp.first()?.let {
-                trackedAppDao.update(
-                    it.copy(
-                        reminderNotification = value
-                    )
+                val updated = it.copy(
+                    reminderNotification = value
                 )
+                trackedAppDao.update(updated)
+                if (value) {
+                    notificationChannel.scheduleTrackedAppReminder(updated)
+                } else {
+                    notificationChannel.cancelTrackedAppReminder(updated)
+                }
             }
         }
     }
@@ -100,10 +104,11 @@ class EditAppViewModel(
     override fun setReminderOffset(value: Int) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             _screenState.value.trackedApp.first()?.let {
-                trackedAppDao.update(
-                    it.copy(
-                        reminderOffset = value
-                    ))
+                val updated = it.copy(
+                    reminderOffset = value
+                )
+                trackedAppDao.update(updated)
+                notificationChannel.scheduleTrackedAppReminder(updated)
             }
         }
     }
@@ -111,11 +116,12 @@ class EditAppViewModel(
     override fun setCustomReminderOffsetTime(time: LocalTime) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             _screenState.value.trackedApp.first()?.let {
-                trackedAppDao.update(
-                    it.copy(
-                        reminderOffsetHour = time.hour,
-                        reminderOffsetMinute = time.minute
-                    ))
+                val updated = it.copy(
+                    reminderOffsetHour = time.hour,
+                    reminderOffsetMinute = time.minute
+                )
+                trackedAppDao.update(updated)
+                notificationChannel.scheduleTrackedAppReminder(updated)
             }
         }
     }
@@ -126,6 +132,7 @@ class EditAppViewModel(
         withContext(Dispatchers.IO) {
             val toDelete = _screenState.value.trackedApp.first()
             if (toDelete != null) {
+                notificationChannel.cancelTrackedAppReminder(toDelete)
                 trackedAppDao.delete(toDelete)
             }
         }
