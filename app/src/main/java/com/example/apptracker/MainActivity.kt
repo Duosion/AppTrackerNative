@@ -110,7 +110,6 @@ class MainActivity : ComponentActivity() {
             val appDatabase = getDatabase(applicationContext)
 
             val context = LocalContext.current
-            val coroutineScope = rememberCoroutineScope()
 
             val packageManager = context.packageManager
 
@@ -133,24 +132,6 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(context) {
                 withContext(Dispatchers.IO) {
                     trackedAppsManager.updateTrackedAppsOpenedStatus()
-                }
-            }
-
-            val lifeCycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(lifeCycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_RESUME) {
-                        coroutineScope.launch {
-                            withContext(Dispatchers.IO) {
-                                trackedAppsManager.refreshUsageStats()
-                                trackedAppsManager.updateTrackedAppsOpenedStatus()
-                            }
-                        }
-                    }
-                }
-                lifeCycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifeCycleOwner.lifecycle.removeObserver(observer)
                 }
             }
 
@@ -192,7 +173,6 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
-                                //setSystemBarsAppearance()
                                 AppsPage(
                                     navController = navController,
                                     viewModel = appsViewModel

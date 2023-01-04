@@ -2,8 +2,6 @@ package com.example.apptracker.ui.routes.apps
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.icu.text.RelativeDateTimeFormatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,31 +17,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.ui.components.TrackedAppLastOpenedText
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
-import com.example.apptracker.util.apps.TrackedAppsManager
-import com.example.apptracker.util.data.AppDatabase
-import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
-
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalPagerApi::class)
 @Composable
@@ -53,14 +46,24 @@ fun AppsPage(
     viewModel: AppsViewModel
 ) {
     val screenState by viewModel.state.collectAsState()
-    val apps by screenState.apps.collectAsState(initial = listOf())
+
     val categories by screenState.categories.collectAsState(initial = listOf())
     
     val coroutineScope = rememberCoroutineScope()
     var appsInfoDialogState by remember { mutableStateOf(AppsInfoDialogState()) }
 
-    val pagerState = rememberPagerState()
-    viewModel.syncPager(pagerState)
+    val lifeCycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifeCycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.updateTrackedAppsOpenedStatus()
+            }
+        }
+        lifeCycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifeCycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     when {
         appsInfoDialogState.enabled && appsInfoDialogState.app != null -> {
@@ -101,11 +104,15 @@ fun AppsPage(
                 .padding(top = padding.calculateTopPadding())
                 .fillMaxSize()
         ) {
+            val apps by screenState.apps.collectAsState(initial = listOf())
 
             val groupedApps = apps.groupBy { app ->
                 val category = categories.find { it.id == app.trackedApp.categoryId }
                 category?.id ?: 1
             }
+
+            val pagerState = rememberPagerState()
+            viewModel.syncPager(pagerState)
 
             if (categories.count() > 1) {
                 ScrollableTabRow(
@@ -314,6 +321,4 @@ fun AppInfoDialogCard(
         onClick = onClick
     )
 }
-
-
 

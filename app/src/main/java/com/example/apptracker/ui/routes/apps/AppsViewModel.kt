@@ -35,7 +35,7 @@ class AppsViewModel(
     val state: StateFlow<AppsScreenState> = _screenState.asStateFlow()
 
     init {
-        refreshTabState()
+        //refreshTabState()
         refreshCategories()
         refreshApps()
     }
@@ -113,6 +113,13 @@ class AppsViewModel(
     fun setAppOpenedStatus(appInfo: AppsScreenApp, isOpened: Boolean) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             trackedAppsManager.setTrackedAppOpenedStatus(appInfo.trackedApp, isOpened)
+        }
+    }
+
+    fun updateTrackedAppsOpenedStatus() = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            trackedAppsManager.refreshUsageStats()
+            trackedAppsManager.updateTrackedAppsOpenedStatus()
         }
     }
 

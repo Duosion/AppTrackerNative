@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class AppsScreenState constructor(
-    val apps: Flow<List<AppsScreenApp>> = MutableStateFlow(listOf()),
+    var apps: Flow<List<AppsScreenApp>> = MutableStateFlow(listOf()),
     val categories: Flow<List<Category>> = MutableStateFlow(listOf()),
     val tabState: Flow<TabState?> = MutableStateFlow(null),
     val pagerSynced: Boolean = false,

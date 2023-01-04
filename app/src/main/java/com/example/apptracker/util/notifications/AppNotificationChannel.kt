@@ -39,7 +39,7 @@ class AppNotificationChannel(
         val useUTC = trackedApp.dayStartIsUTC
         val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
 
-        val dateNow = ZonedDateTime.now().toLocalDateTime()
+        val dateNow = ZonedDateTime.now(zoneOffset).toLocalDateTime()
         val dayStartDate = LocalDateTime.of(LocalDate.now(zoneOffset), LocalTime.of(trackedApp.dayStartHour, trackedApp.dayStartMinute))
 
         // get reminder time
@@ -69,6 +69,8 @@ class AppNotificationChannel(
 
         val secondsDifference = ChronoUnit.SECONDS.between(dateNow, reminderDate)
         val packageName = trackedApp.packageName
+
+        //println("Schedule $packageName reminder for $secondsDifference seconds from now. Day start: $dayStartDate, reminder date: $reminderDate")
 
         val workerData = Data.Builder()
             .putString("package_name", packageName)
