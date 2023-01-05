@@ -205,9 +205,7 @@ fun AppCard(
             .height(70.dp)
             .fillMaxWidth(),
         onClick = onClick,
-        colors = if (app.trackedApp.openedToday)
-            CardDefaults.cardColors()
-        else CardDefaults.cardColors(
+        colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
     ) {

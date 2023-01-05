@@ -97,7 +97,7 @@ class AppNotificationChannel(
             )
         }
 
-        //println("Schedule $packageName reminder for $secondsDifference seconds from now. Day start: $dayStartDate, reminder date: $reminderDate")
+        println("Schedule ${trackedApp.packageName} reminder for $secondsDifference seconds from now. Day start: $dayStartDate, reminder date: $reminderDate")
 
         /*val workerData = Data.Builder()
             .putString("package_name", packageName)

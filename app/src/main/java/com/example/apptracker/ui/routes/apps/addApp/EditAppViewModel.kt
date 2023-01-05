@@ -52,12 +52,12 @@ class EditAppViewModel(
     override fun setDayStartTime(time: LocalTime) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             _screenState.value.trackedApp.firstOrNull()?.let {
-                trackedAppDao.update(
-                    it.copy(
-                        dayStartHour = time.hour,
-                        dayStartMinute = time.minute
-                    )
+                val updated = it.copy(
+                    dayStartHour = time.hour,
+                    dayStartMinute = time.minute
                 )
+                trackedAppDao.update(updated)
+                notificationChannel.scheduleTrackedAppReminder(updated)
             }
         }
     }
