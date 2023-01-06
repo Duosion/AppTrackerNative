@@ -5,13 +5,17 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
+import com.example.apptracker.util.data.apps.TrackedAppUsageTime
 import kotlinx.coroutines.flow.firstOrNull
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.OffsetTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAmount
 import java.util.Calendar
@@ -23,19 +27,24 @@ class TrackedAppsManager(
 ) {
 
     private val trackedAppDao = database.trackedAppDao()
+    private val usageTimeDao = database.usageTimeDao()
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     private var allUsageStats: Map<String, List<UsageStats>> = mapOf()
+    private var allDailyUsageStats: Map<String, List<UsageStats>> = mapOf()
 
     init {
         allUsageStats = getUsageStats()
+        allDailyUsageStats = getUsageStats(UsageStatsManager.INTERVAL_DAILY)
     }
 
-    private fun getUsageStats(): Map<String, List<UsageStats>> {
-        val timeNow = LocalDateTime.now()
-        val begin = timeNow.minusDays(1L)
+    private fun getUsageStats(
+        interval: Int = UsageStatsManager.INTERVAL_WEEKLY
+    ): Map<String, List<UsageStats>> {
+        val timeNow = System.currentTimeMillis()
+        val begin = timeNow - (1000 * 60 * 60 * 24)
 
-        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_WEEKLY, begin.toEpochSecond(ZoneOffset.UTC) * 1000, timeNow.toEpochSecond(ZoneOffset.UTC) * 1000)
+        val stats = usageStatsManager.queryUsageStats(interval, begin, timeNow)
 
         return stats.groupBy { it.packageName }
     }
@@ -60,6 +69,14 @@ class TrackedAppsManager(
                 openedToday = false
             ))
         }
+    }
+
+    private fun updateTrackedAppUsageTime(trackedApp: TrackedApp, usageStats: UsageStats) {
+        usageTimeDao.insert(TrackedAppUsageTime(
+            packageName = trackedApp.packageName,
+            timestamp = getTimestamp(),
+            usageTime = usageStats.totalTimeInForeground
+        ))
     }
 
     private fun updateTrackedAppOpenedStatus(trackedApp: TrackedApp, usageStats: UsageStats) {
@@ -94,6 +111,8 @@ class TrackedAppsManager(
                 else -> 0
             }
         ))
+
+        allDailyUsageStats[trackedApp.packageName]?.let { updateTrackedAppUsageTime(trackedApp, it.first()) }
     }
 
     fun updateTrackedAppOpenedStatus(trackedApp: TrackedApp) {
@@ -113,6 +132,14 @@ class TrackedAppsManager(
             it.forEach { trackedApp ->
                 updateTrackedAppOpenedStatus(trackedApp)
             }
+        }
+    }
+
+    companion object {
+        fun getTimestamp(
+            date: LocalDateTime = LocalDateTime.ofEpochSecond(System.currentTimeMillis() / 1000, 0, ZoneOffset.UTC)
+        ): String {
+            return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         }
     }
 

@@ -7,7 +7,7 @@ import com.google.accompanist.pager.PagerState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-data class AppsScreenState constructor(
+data class AppsScreenState (
     var apps: Flow<List<AppsScreenApp>> = MutableStateFlow(listOf()),
     val categories: Flow<List<Category>> = MutableStateFlow(listOf()),
     val tabState: Flow<TabState?> = MutableStateFlow(null),

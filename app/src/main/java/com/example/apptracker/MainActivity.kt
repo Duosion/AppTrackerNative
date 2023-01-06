@@ -40,6 +40,8 @@ import com.example.apptracker.ui.routes.settings.SettingsPage
 import com.example.apptracker.ui.routes.settings.appearance.AppearancePage
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
 import com.example.apptracker.ui.routes.settings.general.GeneralPage
+import com.example.apptracker.ui.routes.stats.StatsPage
+import com.example.apptracker.ui.routes.stats.StatsViewModel
 import com.example.apptracker.ui.theme.AppTrackerTheme
 import com.example.apptracker.util.apps.AppsManager
 import com.example.apptracker.util.apps.TrackedAppsManager
@@ -125,6 +127,7 @@ class MainActivity : ComponentActivity() {
                 trackedAppsManager = trackedAppsManager,
             )
             val categoriesViewModel = CategoriesViewModel(appDatabase)
+            val statsViewModel = StatsViewModel(appDatabase, packageManager)
 
             // update opened status
             LaunchedEffect(context) {
@@ -177,6 +180,15 @@ class MainActivity : ComponentActivity() {
                                 AppsPage(
                                     navController = navController,
                                     viewModel = appsViewModel
+                                )
+                            }
+                            composable(Route.Stats.path) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = true
+                                }
+                                StatsPage(
+                                    navController = navController,
+                                    viewModel = statsViewModel
                                 )
                             }
                             composable(Route.AddApp.path) { backStackEntry ->
@@ -303,6 +315,7 @@ fun BottomBar(
 ) {
     val navBarItems = listOf(
         MainNavItem.Apps,
+        MainNavItem.Stats,
         MainNavItem.More
     )
 

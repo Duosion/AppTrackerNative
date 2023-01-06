@@ -1,0 +1,3 @@
+<resources>
+    <string name="stats_elapsed_time_format_string">%d hr, %d min</string>
+</resources>
