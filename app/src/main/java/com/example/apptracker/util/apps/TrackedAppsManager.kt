@@ -11,15 +11,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
-import java.time.OffsetTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAmount
-import java.util.Calendar
-import java.util.Date
 
 class TrackedAppsManager(
     database: AppDatabase,
@@ -30,23 +26,29 @@ class TrackedAppsManager(
     private val usageTimeDao = database.usageTimeDao()
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
-    private var allUsageStats: Map<String, List<UsageStats>> = mapOf()
-    private var allDailyUsageStats: Map<String, List<UsageStats>> = mapOf()
+    private var allUsageStats: Map<String, UsageStats> = mapOf()
+    private var allDailyUsageStats: Map<String, UsageStats> = mapOf()
 
     init {
-        allUsageStats = getUsageStats()
-        allDailyUsageStats = getUsageStats(UsageStatsManager.INTERVAL_DAILY)
+        allUsageStats = getUsageStats(7L)
+        allDailyUsageStats = getUsageStats()
     }
 
     private fun getUsageStats(
-        interval: Int = UsageStatsManager.INTERVAL_WEEKLY
-    ): Map<String, List<UsageStats>> {
+        dayOffset: Long = 0L
+    ): Map<String, UsageStats> {
+        val offset = ZoneOffset.UTC
         val timeNow = System.currentTimeMillis()
-        val begin = timeNow - (1000 * 60 * 60 * 24)
+        val begin = LocalDateTime.ofEpochSecond(timeNow / 1000, 0, offset).let {
+            LocalDateTime.of(it.year, it.monthValue, it.dayOfMonth, 0, 0)
+                .minusDays(dayOffset)
+                .toEpochSecond(offset) * 1000
+        }
 
-        val stats = usageStatsManager.queryUsageStats(interval, begin, timeNow)
-
-        return stats.groupBy { it.packageName }
+        return usageStatsManager.queryAndAggregateUsageStats(
+            begin,
+            timeNow
+        )
     }
 
     fun refreshUsageStats() {
@@ -72,11 +74,31 @@ class TrackedAppsManager(
     }
 
     private fun updateTrackedAppUsageTime(trackedApp: TrackedApp, usageStats: UsageStats) {
-        usageTimeDao.insert(TrackedAppUsageTime(
-            packageName = trackedApp.packageName,
-            timestamp = getTimestamp(),
-            usageTime = usageStats.totalTimeInForeground
-        ))
+        val firstTimestamp = usageStats.firstTimeStamp
+        val lastTimestamp = usageStats.lastTimeStamp
+        val packageName = trackedApp.packageName
+
+        val existsId = usageTimeDao.exists(packageName, lastTimestamp)
+
+        if (existsId == null) {
+            // insert new
+            usageTimeDao.insert(TrackedAppUsageTime(
+                packageName = packageName,
+                firstTimestamp = firstTimestamp,
+                lastTimestamp = lastTimestamp,
+                usageTime = usageStats.totalTimeInForeground
+            ))
+        } else {
+            // update existing
+            usageTimeDao.update(TrackedAppUsageTime(
+                id = existsId,
+                packageName = packageName,
+                firstTimestamp = firstTimestamp,
+                lastTimestamp = lastTimestamp,
+                usageTime = usageStats.totalTimeInForeground
+            ))
+        }
+
     }
 
     private fun updateTrackedAppOpenedStatus(trackedApp: TrackedApp, usageStats: UsageStats) {
@@ -112,12 +134,12 @@ class TrackedAppsManager(
             }
         ))
 
-        allDailyUsageStats[trackedApp.packageName]?.let { updateTrackedAppUsageTime(trackedApp, it.first()) }
+        allDailyUsageStats[trackedApp.packageName]?.let { updateTrackedAppUsageTime(trackedApp, it) }
     }
 
     fun updateTrackedAppOpenedStatus(trackedApp: TrackedApp) {
         allUsageStats[trackedApp.packageName]?.let {
-            updateTrackedAppOpenedStatus(trackedApp, it.first())
+            updateTrackedAppOpenedStatus(trackedApp, it)
         }
     }
 
@@ -137,9 +159,9 @@ class TrackedAppsManager(
 
     companion object {
         fun getTimestamp(
-            date: LocalDateTime = LocalDateTime.ofEpochSecond(System.currentTimeMillis() / 1000, 0, ZoneOffset.UTC)
+            epochMillisecond: Long = System.currentTimeMillis()
         ): String {
-            return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            return LocalDateTime.ofEpochSecond(epochMillisecond / 1000, 0, ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         }
     }
 

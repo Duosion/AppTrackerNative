@@ -8,11 +8,12 @@ import java.util.Date
 
 @Entity
 data class TrackedAppUsageTime (
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     // the package name of this app.
-    @PrimaryKey val packageName: String,
-    // the date of this data entry
-    val timestamp: String,
+    val packageName: String,
+    // the epoch timestamp for this usage time
+    val firstTimestamp: Long,
+    val lastTimestamp: Long,
     // the usage time in milliseconds
-    val usageTime: Long = 0,
-
+    var usageTime: Long = 0,
 )
