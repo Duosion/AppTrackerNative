@@ -5,6 +5,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
+import com.example.apptracker.util.data.apps.TrackedAppOpenLog
 import com.example.apptracker.util.data.apps.TrackedAppUsageTime
 import kotlinx.coroutines.flow.firstOrNull
 import java.time.LocalDate
@@ -16,6 +17,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import kotlin.math.log
 
 class TrackedAppsManager(
     database: AppDatabase,
@@ -24,6 +26,7 @@ class TrackedAppsManager(
 
     private val trackedAppDao = database.trackedAppDao()
     private val usageTimeDao = database.usageTimeDao()
+    private val openedLogDao = database.openLogDao()
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     private var allUsageStats: Map<String, UsageStats> = mapOf()
@@ -60,16 +63,34 @@ class TrackedAppsManager(
             val useUTC = trackedApp.dayStartIsUTC
             val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
             val zoneId = if (useUTC) ZoneId.of("UTC") else ZoneId.systemDefault()
+            val packageName = trackedApp.packageName
             trackedAppDao.update(trackedApp.copy(
                 openedTimestamp = LocalDateTime.now(zoneId).toEpochSecond(zoneOffset),
                 ignoreTimestamp = 0,
                 openedToday = true
             ))
+            val logTimestamp = LocalDateTime.now(zoneId).truncatedTo(ChronoUnit.DAYS).toEpochSecond(zoneOffset)
+            openedLogDao.get(packageName, logTimestamp).let {
+                if (it == null) {
+                    openedLogDao.insert(TrackedAppOpenLog(
+                        packageName = packageName,
+                        timestamp = logTimestamp
+                    ))
+                }
+            }
         } else {
+            val useUTC = trackedApp.dayStartIsUTC
+            val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
+            val zoneId = if (useUTC) ZoneId.of("UTC") else ZoneId.systemDefault()
+
             trackedAppDao.update(trackedApp.copy(
                 ignoreTimestamp = trackedApp.openedTimestamp,
                 openedToday = false
             ))
+            // remove log entry
+            openedLogDao.get(trackedApp.packageName, LocalDateTime.now(zoneId).truncatedTo(ChronoUnit.DAYS).toEpochSecond(zoneOffset))?.let {
+                openedLogDao.delete(it)
+            }
         }
     }
 
@@ -78,7 +99,7 @@ class TrackedAppsManager(
         val lastTimestamp = usageStats.lastTimeStamp
         val packageName = trackedApp.packageName
 
-        val existsId = usageTimeDao.exists(packageName, lastTimestamp)
+        val existsId = usageTimeDao.exists(packageName, firstTimestamp)
 
         if (existsId == null) {
             // insert new
@@ -103,6 +124,7 @@ class TrackedAppsManager(
 
     private fun updateTrackedAppOpenedStatus(trackedApp: TrackedApp, usageStats: UsageStats) {
         val useUTC = trackedApp.dayStartIsUTC
+        val packageName = trackedApp.packageName
 
         val lastTimeUsed = trackedApp.openedTimestamp.coerceAtLeast(usageStats.lastTimeUsed / 1000)
         val zoneOffset = if (useUTC) ZoneOffset.UTC else OffsetDateTime.now().offset
@@ -120,21 +142,28 @@ class TrackedAppsManager(
         val openedToday = lastDateOpened >= dayStartDate
 
         // calculate streak
-        val daysDifference = ChronoUnit.DAYS.between(lastDateOpened, dayStartDate)
-        val streakAlreadySet = trackedApp.openedTimestamp > dayStartDate.toEpochSecond(zoneOffset)
+        val openedLogTimestamp = lastDateOpened.truncatedTo(ChronoUnit.DAYS).toEpochSecond(zoneOffset)
+        val existingLogEntry = openedLogDao.get(packageName, openedLogTimestamp)
+
+        when {
+            (!openedToday && existingLogEntry != null) -> {
+                openedLogDao.delete(existingLogEntry)
+            }
+            (openedToday && existingLogEntry == null) -> {
+                openedLogDao.insert(TrackedAppOpenLog(
+                    packageName = packageName,
+                    timestamp = openedLogTimestamp
+                ))
+            }
+        }
 
         // update data
         trackedAppDao.update(trackedApp.copy(
             openedTimestamp = lastTimeUsed,
-            openedToday = openedToday,
-            openStreak = when {
-                streakAlreadySet -> trackedApp.openStreak
-                2 > daysDifference -> trackedApp.openStreak + 1
-                else -> 0
-            }
+            openedToday = openedToday
         ))
 
-        allDailyUsageStats[trackedApp.packageName]?.let { updateTrackedAppUsageTime(trackedApp, it) }
+        allDailyUsageStats[packageName]?.let { updateTrackedAppUsageTime(trackedApp, it) }
     }
 
     fun updateTrackedAppOpenedStatus(trackedApp: TrackedApp) {

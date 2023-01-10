@@ -15,24 +15,34 @@ class UsageTimeManager(
     fun queryUsageTime(
         beginTime: Long,
         endTime: Long,
-        groupBy: UsageTimeGroupBy = UsageTimeGroupBy.DAY
+        groupBy: UsageTimeGroupBy = UsageTimeGroupBy.DAY,
+        zoneOffset: ZoneOffset = ZoneOffset.UTC
     ): List<GroupedUsageTime> {
 
-        val offset = ZoneOffset.UTC
-
         val inRange = usageTimeDao.getAllInTimestampRange(beginTime, endTime)
+
+        // get groups
+        val groups: MutableMap<UsageTimeTimestamp, List<TrackedAppUsageTime>> = mutableMapOf()
+        val steps = ((endTime - beginTime) / groupBy.timeUnit).toInt()
+        for (index in (steps - 1) downTo 0) {
+            val timestamp = endTime - (groupBy.timeUnit * index)
+            val timestampDate = LocalDateTime.ofEpochSecond(timestamp / 1000, 0, zoneOffset)
+            groups[UsageTimeTimestamp(
+                date = timestampDate.truncatedTo(ChronoUnit.DAYS)
+            )] = listOf()
+        }
 
         // group
         val grouped = inRange.groupBy {
             when(groupBy) {
                 UsageTimeGroupBy.DAY -> {
-                    val timestampDate = LocalDateTime.ofEpochSecond(it.lastTimestamp / 1000, 0, offset)
+                    val timestampDate = LocalDateTime.ofEpochSecond(it.lastTimestamp / 1000, 0, zoneOffset)
                     UsageTimeTimestamp(
                         date = timestampDate.truncatedTo(ChronoUnit.DAYS)
                     )
                 }
                 UsageTimeGroupBy.WEEK -> {
-                    val timestampDate = LocalDateTime.ofEpochSecond(it.lastTimestamp / 1000, 0, offset)
+                    val timestampDate = LocalDateTime.ofEpochSecond(it.lastTimestamp / 1000, 0, zoneOffset)
                     timestampDate.truncatedTo(ChronoUnit.WEEKS)
                     UsageTimeTimestamp(
                         date = timestampDate.truncatedTo(ChronoUnit.DAYS).minusDays((timestampDate.dayOfWeek ?: DayOfWeek.SUNDAY).value.toLong())
@@ -43,7 +53,7 @@ class UsageTimeManager(
 
         // combine alike package usage times (no more than one entry of the same package name in each group)
         val merged: MutableList<GroupedUsageTime> = mutableListOf()
-        grouped.forEach { (usageTimeTimestamp, usageTimes) ->
+        groups.plus(grouped).forEach { (usageTimeTimestamp, usageTimes) ->
 
             val lookup: MutableMap<String, TrackedAppUsageTime> = mutableMapOf()
 
@@ -65,9 +75,8 @@ class UsageTimeManager(
             merged.add(GroupedUsageTime(
                 timestamp = usageTimeTimestamp,
                 combinedUsageTime = combinedUsageTime,
-                values = lookup.values.toList()
+                values = lookup.values.toList().sortedByDescending { it.usageTime }
             ))
-
         }
 
         return merged.toList()
@@ -77,7 +86,7 @@ class UsageTimeManager(
     fun queryCombinedUsageTime(
         beginTime: Long,
         endTime: Long
-    ): Map<String, TrackedAppUsageTime> {
+    ): List<TrackedAppUsageTime> {
 
         val inRange = usageTimeDao.getAllInTimestampRange(beginTime, endTime)
 
@@ -97,7 +106,7 @@ class UsageTimeManager(
             }
         }
 
-        return merged.toMap()
+        return merged.values.toList().sortedByDescending { it.usageTime }
     }
 
 }

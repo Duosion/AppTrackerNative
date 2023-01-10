@@ -7,7 +7,8 @@ import androidx.compose.ui.graphics.Color
 data class BarChartColors(
     val barColor: Color,
     val headlineColor: Color,
-    val supportingColor: Color
+    val supportingColor: Color,
+    val selectedLabelColor: Color,
 ) {
     companion object {
         @Composable
@@ -15,7 +16,8 @@ data class BarChartColors(
             return BarChartColors(
                 barColor = MaterialTheme.colorScheme.primary,
                 headlineColor = MaterialTheme.colorScheme.primary,
-                supportingColor = MaterialTheme.colorScheme.onSurface
+                supportingColor = MaterialTheme.colorScheme.onSurface,
+                selectedLabelColor = MaterialTheme.colorScheme.surface
             )
         }
     }

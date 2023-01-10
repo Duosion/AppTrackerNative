@@ -3,10 +3,8 @@ package com.example.apptracker.ui.components.barChart
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -19,7 +17,8 @@ fun BarChart(
     bars: List<BarChartBar>,
     colors: BarChartColors = BarChartColors.default(),
     padding: BarChartPadding = BarChartPadding(),
-    style: BarChartStyle = BarChartStyle.default()
+    style: BarChartStyle = BarChartStyle.default(),
+    onSelectedBarChange: (Int) -> Unit
 ) {
     val lineColor = MaterialTheme.colorScheme.outline
 
@@ -38,7 +37,7 @@ fun BarChart(
                     val spaceBetweenLines = 100
 
                     for (lineNumber in 0..(size.height.toInt() / spaceBetweenLines)) {
-                        val offset = (spaceBetweenLines*lineNumber).toFloat()
+                        val offset = (spaceBetweenLines * lineNumber).toFloat()
                         drawLine(lineColor, Offset(0f, offset), Offset(size.width, offset))
                     }
 
@@ -53,7 +52,8 @@ fun BarChart(
                     bar.fraction,
                     1f / (bars.count() - index),
                     colors,
-                    padding
+                    padding,
+                    style = style
                 )
             }
 
@@ -62,6 +62,10 @@ fun BarChart(
             modifier = Modifier.padding(vertical = padding.dividerPadding, horizontal = paddingBetweenBars)
         )
         // labels
+
+        // select last label by default
+        var selectedLabel by remember { mutableStateOf(bars.count() - 1) }
+
         Row(
             modifier = Modifier
                 .padding(horizontal = paddingBetweenBars)
@@ -75,8 +79,13 @@ fun BarChart(
                     modifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(1f / (bars.count() - index)),
-                    headlineText = bar.headline,
-                    supportingText = bar.supporting
+                    text = bar.label,
+                    style = style,
+                    selected = selectedLabel == index,
+                    onClick = {
+                        selectedLabel = index
+                        onSelectedBarChange(index)
+                    }
                 )
             }
 
@@ -113,28 +122,26 @@ private fun Bar(
 @Composable
 private fun BarLabel(
     modifier: Modifier = Modifier,
-    headlineText: String,
-    supportingText: String?,
+    text: String,
     colors: BarChartColors = BarChartColors.default(),
     padding: BarChartPadding = BarChartPadding(),
-    style: BarChartStyle = BarChartStyle.default()
+    style: BarChartStyle = BarChartStyle.default(),
+    selected: Boolean = false,
+    onClick: () -> Unit
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = headlineText,
-            color = colors.headlineColor,
-            style = style.headlineTextStyle
-        )
-
-        if (supportingText != null) {
-            Text(
-                text = supportingText,
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
+            IconButton(
+                onClick = onClick,
+                colors = if(selected) IconButtonDefaults.filledTonalIconButtonColors() else IconButtonDefaults.iconButtonColors()
+            ) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
     }
 }

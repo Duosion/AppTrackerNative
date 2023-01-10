@@ -5,6 +5,7 @@ sealed class Route(val path: String, val argumentlessPath: String = path) {
     object AddApp: Route("/apps/add/{packageName}", "/apps/add/")
     object EditApp: Route("/apps/edit/{packageName}", "/apps/edit/")
     object Stats: Route("/stats")
+    object UsageStats: Route("/stats/usage/{selectedBar}","/stats/usage/")
     object More: Route("/more")
     object AddApps: Route("/more/appSelector")
     object Settings: Route("/more/settings")

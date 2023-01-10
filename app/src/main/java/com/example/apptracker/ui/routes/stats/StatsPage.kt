@@ -1,24 +1,26 @@
 package com.example.apptracker.ui.routes.stats
 
-import android.text.format.DateFormat
-import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.apptracker.R
+import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.ui.components.barChart.BarChart
 import com.example.apptracker.ui.components.barChart.BarChartBar
+import com.example.apptracker.util.data.apps.TrackedAppUsageTime
+import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -31,6 +33,7 @@ fun StatsPage(
 ) {
     val screenState by viewModel.state.collectAsState()
     val usageTimes = screenState.usageTime
+    val appsInfo = screenState.appsInfo
 
     Scaffold (
         topBar = {
@@ -41,82 +44,125 @@ fun StatsPage(
     ) { padding ->
         Divider()
 
-        Column(
-            modifier = Modifier
-                .padding(top = padding.calculateTopPadding())
-                .fillMaxSize()
-        ) {
-            Card(
+        if (appsInfo.isEmpty()) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                onClick = {/*TODO*/}
-            ){
-                Column(
+                    .padding(top = padding.calculateTopPadding())
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ResourceText(R.string.stats_no_tracked_apps_warning)
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(top = padding.calculateTopPadding())
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Surface(
                     modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "App Usage Time",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    var largestUsageTime = 0L
-
-                    usageTimes.forEach {
-                        largestUsageTime = largestUsageTime.coerceAtLeast(it.combinedUsageTime / 1000)
-                    }
-
-                    val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
-
-                    BarChart(
+                        .fillMaxWidth(),
+                    tonalElevation = 1.dp,
+                    shape = MaterialTheme.shapes.large
+                ){
+                    Column(
                         modifier = Modifier
-                            .padding(top = 15.dp)
-                            .height(200.dp)
-                            .fillMaxWidth(),
-                        bars = screenState.usageTime.map {
-                            val usageTimeSeconds = TimeUnit.MILLISECONDS.toSeconds(it.combinedUsageTime)
-                            BarChartBar(
-                                fraction = usageTimeSeconds.toFloat() / largestUsageTime,
-                                headline = DateUtils.formatElapsedTime(usageTimeSeconds),
-                                supporting = it.timestamp.date.format(dateFormatter)
-                            )
+                            .padding(10.dp)
+                            .fillMaxWidth()
+                    ) {
+
+                        var largestUsageTime = 1L
+                        usageTimes.forEach {
+                            largestUsageTime = largestUsageTime.coerceAtLeast(it.combinedUsageTime / 1000)
                         }
-                    )
+
+                        var selectedBar by remember { mutableStateOf(usageTimes.count() - 1) }
+                        val selectedUsageTime = usageTimes[selectedBar]
+                        val selectedUsageTimeValues = selectedUsageTime.values
+
+
+                        ElapsedTimeText(
+                            elapsedTime = selectedUsageTime.combinedUsageTime,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(id = R.string.stats_usage_time_label).format(selectedUsageTime.timestamp.date.format(DateTimeFormatter.ofPattern("LLLL d"))),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        val labelDateFormatter = DateTimeFormatter.ofPattern("M/d")
+
+                        BarChart(
+                            modifier = Modifier
+                                .padding(top = 15.dp, bottom = 15.dp)
+                                .height(150.dp)
+                                .fillMaxWidth(),
+                            bars = usageTimes.map {
+                                val usageTimeSeconds = TimeUnit.MILLISECONDS.toSeconds(it.combinedUsageTime)
+                                BarChartBar(
+                                    fraction = usageTimeSeconds.toFloat() / largestUsageTime,
+                                    label = it.timestamp.date.format(labelDateFormatter)
+                                )
+                            },
+                            onSelectedBarChange = {
+                                selectedBar = it
+                            }
+                        )
+
+                        val itemCount = selectedUsageTimeValues.count()
+                        val topThree = selectedUsageTimeValues.subList(0, itemCount.coerceAtMost(3))
+
+                        if (topThree.isNotEmpty()) {
+                            Divider(
+                                modifier = Modifier.padding(bottom = 5.dp)
+                            )
+
+                            topThree.forEach { usageInfo ->
+                                appsInfo[usageInfo.packageName]?.let { appInfo ->
+                                    UsageStatsListItem(
+                                        usageInfo = usageInfo,
+                                        app = appInfo
+                                    )
+                                }
+                            }
+
+                            if (itemCount > 3) {
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 5.dp)
+                                )
+                                TextButton(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        // go to usage stats page
+                                        navController.navigate(Route.UsageStats.argumentlessPath + selectedBar) {
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                ) {
+                                    ResourceText(R.string.stats_usage_time_see_all)
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
         }
-
     }
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun StatsCard(
-    app: StatsScreenApp,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .padding(bottom = 10.dp)
-            .height(70.dp)
-            .fillMaxWidth(),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
-    ) {
-        StatsListItem(
-            app = app
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun StatsListItem(
-    app: StatsScreenApp
+fun UsageStatsListItem(
+    usageInfo: TrackedAppUsageTime,
+    app: StatsScreenAppInfo
 ) {
     val label = app.label
     ListItem(
@@ -133,7 +179,7 @@ private fun StatsListItem(
                 )
                 ElapsedTimeText(
                     modifier = Modifier.fillMaxWidth(),
-                    elapsedTime = app.usageInfo.usageTime,
+                    elapsedTime = usageInfo.usageTime,
                     textAlign = TextAlign.End
                 )
             }
@@ -141,7 +187,7 @@ private fun StatsListItem(
         },
         leadingContent = {
             Image(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(36.dp),
                 painter = rememberDrawablePainter(drawable = app.icon),
                 contentDescription = label,
                 contentScale = ContentScale.FillHeight,
@@ -154,24 +200,41 @@ private fun StatsListItem(
 }
 
 @Composable
-private fun ElapsedTimeText(
+fun ElapsedTimeText(
     // the elapsed time in milliseconds
     modifier: Modifier = Modifier,
     elapsedTime: Long,
-    textAlign: TextAlign? = null
+    textAlign: TextAlign? = null,
+    style: TextStyle = LocalTextStyle.current,
+    color: Color = Color.Unspecified
 ) {
-
     val hours = TimeUnit.MILLISECONDS.toHours(elapsedTime)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) - TimeUnit.HOURS.toMinutes(hours)
 
-    val formatted = String.format(stringResource(id = R.string.stats_elapsed_time_format_string),
-        hours,
-        TimeUnit.MILLISECONDS.toMinutes(elapsedTime) - TimeUnit.HOURS.toMinutes(hours)
-    )
+    val formatted = when {
+        (hours > 0) -> {
+            String.format(stringResource(id = R.string.stats_elapsed_time_hour_and_minute_format_string),
+                hours,
+                minutes
+            )
+        }
+        (minutes > 0) -> {
+            String.format(stringResource(id = R.string.stats_elapsed_time_minute_format_string),
+                minutes
+            )
+        }
+        else -> {
+            String.format(stringResource(id = R.string.stats_elapsed_time_seconds_format_string),
+                TimeUnit.MILLISECONDS.toSeconds(elapsedTime) - TimeUnit.MINUTES.toSeconds(minutes)
+            )
+        }
+    }
     
     Text(
         modifier = modifier,
         text = formatted,
-        textAlign = textAlign
+        textAlign = textAlign,
+        style = style,
+        color = color
     )
-
 }
