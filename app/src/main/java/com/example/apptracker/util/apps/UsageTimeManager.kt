@@ -86,7 +86,7 @@ class UsageTimeManager(
     fun queryCombinedUsageTime(
         beginTime: Long,
         endTime: Long
-    ): List<TrackedAppUsageTime> {
+    ): GroupedUsageTime {
 
         val inRange = usageTimeDao.getAllInTimestampRange(beginTime, endTime)
 
@@ -95,18 +95,27 @@ class UsageTimeManager(
         }
 
         val merged: MutableMap<String, TrackedAppUsageTime> = mutableMapOf()
+        var combinedUsageTime = 0L
         grouped.forEach { (packageName, usageTimes) ->
             usageTimes.forEach {
                 val existing = merged[packageName]
+                val usageTime = it.usageTime
                 if (existing == null) {
                     merged[packageName] = it
                 } else {
-                    existing.usageTime += it.usageTime
+                    existing.usageTime += usageTime
                 }
+                combinedUsageTime += usageTime
             }
         }
 
-        return merged.values.toList().sortedByDescending { it.usageTime }
+        return GroupedUsageTime(
+            timestamp = UsageTimeTimestamp(
+                date = LocalDateTime.now(),
+            ),
+            combinedUsageTime = combinedUsageTime,
+            values = merged.values.toList().sortedByDescending { it.usageTime }
+        )
     }
 
 }

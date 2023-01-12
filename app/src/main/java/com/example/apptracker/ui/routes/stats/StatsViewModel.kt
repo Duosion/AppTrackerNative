@@ -17,7 +17,6 @@ class StatsViewModel(
     private val packageManager: PackageManager,
 ) : ViewModel() {
 
-    private val usageTimeDao = database.usageTimeDao()
     private val appsManager = AppsManager(packageManager)
     private val trackedAppDao = database.trackedAppDao()
     private val usageTimeManager = UsageTimeManager(database)
@@ -51,6 +50,10 @@ class StatsViewModel(
                             rangeStart,
                             rangeEnd,
                             zoneOffset = ZonedDateTime.now().offset
+                        ),
+                        allTimeUsageTime = usageTimeManager.queryCombinedUsageTime(
+                            0,
+                            rangeEnd
                         ),
                         appsInfo = appsInfo
                     )

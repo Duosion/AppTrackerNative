@@ -42,6 +42,7 @@ import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
 import com.example.apptracker.ui.routes.settings.general.GeneralPage
 import com.example.apptracker.ui.routes.stats.StatsPage
 import com.example.apptracker.ui.routes.stats.StatsViewModel
+import com.example.apptracker.ui.routes.stats.usageStats.AllTimeUsageStatsPage
 import com.example.apptracker.ui.routes.stats.usageStats.UsageStatsPage
 import com.example.apptracker.ui.theme.AppTrackerTheme
 import com.example.apptracker.util.apps.AppsManager
@@ -201,6 +202,16 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     viewModel = statsViewModel,
                                     defaultSelectedBar = backStackEntry.arguments?.getString("selectedBar")?.toInt() ?: 0
+                                )
+                            }
+                            composable(Route.AllTimeUsageStats.path) {
+                                LaunchedEffect(Unit) {
+                                    bottomBarState.value = false
+                                }
+
+                                AllTimeUsageStatsPage(
+                                    navController = navController,
+                                    viewModel = statsViewModel
                                 )
                             }
                             composable(Route.AddApp.path) { backStackEntry ->

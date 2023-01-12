@@ -1,12 +1,16 @@
 package com.example.apptracker.ui.routes.stats.usageStats
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -19,10 +23,12 @@ import com.example.apptracker.ui.components.barChart.BarChartBar
 import com.example.apptracker.ui.routes.stats.ElapsedTimeText
 import com.example.apptracker.ui.routes.stats.StatsViewModel
 import com.example.apptracker.ui.routes.stats.UsageStatsListItem
+import com.example.apptracker.ui.routes.stats.UsageTimeBarChart
+import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun UsageStatsPage(
     navController: NavController,
@@ -30,12 +36,13 @@ fun UsageStatsPage(
     defaultSelectedBar: Int
 ) {
     val screenState by viewModel.state.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(
+        initialPage = defaultSelectedBar
+    )
+
     val usageTimes = screenState.usageTime
     val appsInfo = screenState.appsInfo
-
-    var selectedBar by remember { mutableStateOf(defaultSelectedBar) }
-    val selectedUsageTime = usageTimes[selectedBar]
-    val selectedUsageTimeValues = selectedUsageTime.values
 
     Scaffold (
         topBar = {
@@ -53,7 +60,6 @@ fun UsageStatsPage(
                 .padding(top = padding.calculateTopPadding())
                 .fillMaxSize()
         ) {
-
             Surface(
                 modifier = Modifier
                     .padding(bottom = 10.dp)
@@ -66,57 +72,48 @@ fun UsageStatsPage(
                         .padding(10.dp)
                         .fillMaxWidth()
                 ) {
-
-                    var largestUsageTime = 0L
-                    usageTimes.forEach {
-                        largestUsageTime =
-                            largestUsageTime.coerceAtLeast(it.combinedUsageTime / 1000)
-                    }
-
-                    ElapsedTimeText(
-                        elapsedTime = selectedUsageTime.combinedUsageTime,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(id = R.string.stats_usage_time_label).format(
-                            selectedUsageTime.timestamp.date.format(DateTimeFormatter.ofPattern("LLLL d"))
-                        ),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    val labelDateFormatter = DateTimeFormatter.ofPattern("M/d")
-
-                    BarChart(
-                        modifier = Modifier
-                            .padding(top = 15.dp, bottom = 15.dp)
-                            .height(150.dp)
-                            .fillMaxWidth(),
-                        bars = screenState.usageTime.map {
-                            val usageTimeSeconds =
-                                TimeUnit.MILLISECONDS.toSeconds(it.combinedUsageTime)
-                            BarChartBar(
-                                fraction = usageTimeSeconds.toFloat() / largestUsageTime,
-                                label = it.timestamp.date.format(labelDateFormatter)
-                            )
-                        },
-                        onSelectedBarChange = {
-                            selectedBar = it
+                    UsageTimeBarChart(
+                        usageTimes = usageTimes,
+                        selectedBar = pagerState.currentPage,
+                        onSelectedBarChanged = { newPage ->
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(newPage)
+                            }
                         }
                     )
                 }
             }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(selectedUsageTimeValues) { usageInfo ->
-                    appsInfo[usageInfo.packageName]?.let { appInfo ->
-                        UsageStatsListItem(
-                            usageInfo = usageInfo,
-                            app = appInfo
+            HorizontalPager(
+                pageCount = usageTimes.count(),
+                state = pagerState
+            ) { page ->
+                val selectedUsageTime = usageTimes[page]
+                val selectedUsageTimeValues = selectedUsageTime.values
+
+                if (selectedUsageTimeValues.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.stats_usage_stats_no_data_warning).format(selectedUsageTime.timestamp.date.format(DateTimeFormatter.ofPattern(
+                                "LLLL d"))),
                         )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(selectedUsageTimeValues) { usageInfo ->
+                            appsInfo[usageInfo.packageName]?.let { appInfo ->
+                                UsageStatsListItem(
+                                    usageInfo = usageInfo,
+                                    app = appInfo
+                                )
+                            }
+                        }
                     }
                 }
             }

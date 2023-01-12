@@ -3,6 +3,7 @@ package com.example.apptracker.util.apps
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import androidx.compose.foundation.lazy.layout.IntervalList
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.apps.TrackedApp
 import com.example.apptracker.util.data.apps.TrackedAppOpenLog
@@ -33,24 +34,25 @@ class TrackedAppsManager(
     private var allDailyUsageStats: Map<String, UsageStats> = mapOf()
 
     init {
-        allUsageStats = getUsageStats(7L)
-        allDailyUsageStats = getUsageStats()
+        allUsageStats = getUsageStats(dayOffset = 7L)
+        allDailyUsageStats = getUsageStats(offset = ZonedDateTime.now().offset)
     }
 
     private fun getUsageStats(
+        offset: ZoneOffset = ZoneOffset.UTC,
         dayOffset: Long = 0L
     ): Map<String, UsageStats> {
-        val offset = ZoneOffset.UTC
         val timeNow = System.currentTimeMillis()
         val begin = LocalDateTime.ofEpochSecond(timeNow / 1000, 0, offset).let {
             LocalDateTime.of(it.year, it.monthValue, it.dayOfMonth, 0, 0)
                 .minusDays(dayOffset)
                 .toEpochSecond(offset) * 1000
         }
+        val end = begin + (1000 * 60 * 60 * 24 * (dayOffset + 1))
 
         return usageStatsManager.queryAndAggregateUsageStats(
             begin,
-            timeNow
+            end
         )
     }
 
@@ -140,6 +142,9 @@ class TrackedAppsManager(
         }
 
         val openedToday = lastDateOpened >= dayStartDate
+
+        println("$packageName get usage stats - begin: ${LocalDateTime.ofEpochSecond(usageStats.firstTimeStamp / 1000, 0, ZonedDateTime.now().offset)} - end: ${LocalDateTime.ofEpochSecond(usageStats.lastTimeStamp / 1000, 0, ZonedDateTime.now().offset)}")
+
 
         // calculate streak
         val openedLogTimestamp = lastDateOpened.truncatedTo(ChronoUnit.DAYS).toEpochSecond(zoneOffset)

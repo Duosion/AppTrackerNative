@@ -8,5 +8,9 @@
     <string name="stats_usage_time_label">Tracked App Usage Time on %s</string>
     <string name="stats_usage_time_see_all">See All</string>
 
+    <string name="stats_all_time_usage_stats_page_name">All Time Usage Stats</string>
+    <string name="stats_all_time_usage_time_label">All Time Tracked App Usage Time</string>
+
     <string name="stats_usage_stats_page_name">Usage Stats</string>
+    <string name="stats_usage_stats_no_data_warning">No data for %s</string>
 </resources>

@@ -11,7 +11,7 @@ interface TrackedAppUsageTimeDao {
     @Query("SELECT * FROM TrackedAppUsageTime WHERE firstTimestamp = (:timestamp) OR lastTimestamp = (:timestamp)")
     fun getAllWithTimestamp(timestamp: Long): Flow<List<TrackedAppUsageTime>>
 
-    @Query("SELECT * FROM TrackedAppUsageTime WHERE (firstTimestamp BETWEEN (:timestampMin) and (:timestampMax)) OR (lastTimestamp BETWEEN (:timestampMin) and (:timestampMax))")
+    @Query("SELECT * FROM TrackedAppUsageTime WHERE (firstTimestamp BETWEEN (:timestampMin) and (:timestampMax))")
     fun getAllInTimestampRange(timestampMin: Long, timestampMax: Long): List<TrackedAppUsageTime>
 
     @Query("SELECT * FROM TrackedAppUsageTime WHERE packageName = (:packageName)")

@@ -1,5 +1,6 @@
 package com.example.apptracker.ui.components.barChart
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,6 +12,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun BarChart(
     modifier: Modifier = Modifier,
@@ -18,7 +20,8 @@ fun BarChart(
     colors: BarChartColors = BarChartColors.default(),
     padding: BarChartPadding = BarChartPadding(),
     style: BarChartStyle = BarChartStyle.default(),
-    onSelectedBarChange: (Int) -> Unit
+    onSelectedBarChange: (Int) -> Unit,
+    selectedBar: Int = bars.count() - 1
 ) {
     val lineColor = MaterialTheme.colorScheme.outline
 
@@ -64,7 +67,6 @@ fun BarChart(
         // labels
 
         // select last label by default
-        var selectedLabel by remember { mutableStateOf(bars.count() - 1) }
 
         Row(
             modifier = Modifier
@@ -81,9 +83,8 @@ fun BarChart(
                         .fillMaxWidth(1f / (bars.count() - index)),
                     text = bar.label,
                     style = style,
-                    selected = selectedLabel == index,
+                    selected = selectedBar == index,
                     onClick = {
-                        selectedLabel = index
                         onSelectedBarChange(index)
                     }
                 )
