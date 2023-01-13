@@ -19,6 +19,7 @@ class StatsViewModel(
 
     private val appsManager = AppsManager(packageManager)
     private val trackedAppDao = database.trackedAppDao()
+    private val openLogDao = database.openLogDao()
     private val usageTimeManager = UsageTimeManager(database)
 
     private val _screenState = MutableStateFlow(StatsScreenState())
@@ -32,6 +33,11 @@ class StatsViewModel(
         val rangeEnd = System.currentTimeMillis()
         val rangeStart = rangeEnd - (1000 * 60 * 60 * 24 * 7)
         withContext(Dispatchers.IO) {
+
+            /*openLogDao.getOpenedStreaks().collectLatest { openStreaks ->
+                print(openStreaks)
+            }*/
+
             trackedAppDao.getAll().collectLatest { trackedApps ->
                 val appsInfo: MutableMap<String, StatsScreenAppInfo> = mutableMapOf()
 

@@ -37,7 +37,6 @@ class TrackedAppsManager(
         allUsageStats = getUsageStats(dayOffset = 7L)
         allDailyUsageStats = getUsageStats(offset = ZonedDateTime.now().offset)
     }
-
     private fun getUsageStats(
         offset: ZoneOffset = ZoneOffset.UTC,
         dayOffset: Long = 0L
@@ -147,8 +146,15 @@ class TrackedAppsManager(
 
 
         // calculate streak
+        val mostRecentTimestamp = openedLogDao.getMostRecent(packageName)
         val openedLogTimestamp = lastDateOpened.truncatedTo(ChronoUnit.DAYS).toEpochSecond(zoneOffset)
         val existingLogEntry = openedLogDao.get(packageName, openedLogTimestamp)
+
+        mostRecentTimestamp?.let {
+            if ((openedLogTimestamp - mostRecentTimestamp) > (60 * 60 * 24)) {
+                openedLogDao.deleteAllWithPackageName(packageName)
+            }
+        }
 
         when {
             (!openedToday && existingLogEntry != null) -> {

@@ -13,8 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
 import com.example.apptracker.ui.components.ResourceText
@@ -53,28 +57,27 @@ fun AllTimeUsageStatsPage(
                     .padding(top = padding.calculateTopPadding())
                     .fillMaxSize()
             ) {
-                Surface(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .fillMaxWidth(),
-                    tonalElevation = 1.dp,
-                    shape = MaterialTheme.shapes.large
-                ) {
                     Column(
                         modifier = Modifier
                             .padding(10.dp)
                             .fillMaxWidth()
+                            //.padding(bottom = 10.dp)
                     ) {
                         ElapsedTimeText(
+                            modifier = Modifier.fillMaxWidth(),
                             elapsedTime = allTimeUsageTime.combinedUsageTime,
+                            textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.headlineSmall,
                         )
                         ResourceText(
+                            modifier = Modifier.fillMaxWidth(),
                             id = R.string.stats_all_time_usage_time_label,
+                            textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.titleSmall
                         )
                     }
-                }
+
+                Divider()
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()

@@ -1,6 +1,7 @@
 package com.example.apptracker.ui.components.barChart
 
-import android.annotation.SuppressLint
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,9 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.dp
 
-@SuppressLint("UnrememberedMutableState")
 @Composable
 fun BarChart(
     modifier: Modifier = Modifier,
@@ -135,14 +134,22 @@ private fun BarLabel(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Crossfade(
+            targetState = selected,
+            animationSpec = tween(
+                durationMillis = style.labelTweenDurationMillis,
+                easing = style.labelTweenEase
+            )
+        ) { state ->
             IconButton(
                 onClick = onClick,
-                colors = if(selected) IconButtonDefaults.filledTonalIconButtonColors() else IconButtonDefaults.iconButtonColors()
+                colors = if(state) IconButtonDefaults.filledTonalIconButtonColors() else IconButtonDefaults.iconButtonColors()
             ) {
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.labelLarge
+                    style = style.labelTextStyle
                 )
             }
+        }
     }
 }

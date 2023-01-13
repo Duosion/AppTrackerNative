@@ -164,9 +164,6 @@ fun StatsPage(
                                 restoreState = true
                             }
                         },
-                        listItemColors = ListItemDefaults.colors(
-                            containerColor = Color.Transparent
-                        )
                     )
                 }
 
