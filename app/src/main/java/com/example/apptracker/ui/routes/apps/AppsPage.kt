@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -48,7 +47,15 @@ fun AppsPage(
     val categories by screenState.categories.collectAsState(initial = listOf())
     
     val coroutineScope = rememberCoroutineScope()
-    var appsInfoDialogState by remember { mutableStateOf(AppsInfoDialogState()) }
+
+    var bottomSheetOpen by remember { mutableStateOf(AppsInfoDialogState()) }
+    val bottomSheetState = rememberSheetState(
+        skipHalfExpanded = false
+    )
+
+    fun hideBottomSheet() {
+
+    }
 
     val pagerState = rememberPagerState()
     viewModel.syncPager(pagerState)
@@ -67,29 +74,32 @@ fun AppsPage(
     }
 
     when {
-        appsInfoDialogState.enabled && appsInfoDialogState.app != null -> {
-            val app = appsInfoDialogState.app
-            AppInfoDialog(
-                onDismissRequest = { appsInfoDialogState = AppsInfoDialogState() },
-                app = app!!,
-                onOpenClick = {
-                    val intent =
-                        context.packageManager.getLaunchIntentForPackage(app.trackedApp.packageName)
-                    if (intent != null) {
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        ContextCompat.startActivity(context, intent, null)
+        bottomSheetOpen.enabled && bottomSheetOpen.app != null -> {
+            bottomSheetOpen.app?.let { app ->
+                AppInfoBottomSheet(
+                    onDismissRequest = { bottomSheetOpen = AppsInfoDialogState() },
+                    sheetState = bottomSheetState,
+                    app = app,
+                    onOpenClick = {
+                        val intent =
+                            context.packageManager.getLaunchIntentForPackage(app.trackedApp.packageName)
+                        if (intent != null) {
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            ContextCompat.startActivity(context, intent, null)
+                        }
+                        // close sheet
+                        hideBottomSheet()
+                    },
+                    onSettingsClick = {
+                        navController.navigate("${Route.EditApp.argumentlessPath}${app.trackedApp.packageName}") {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                        // close sheet
+                        hideBottomSheet()
                     }
-                    // close dialog
-                    appsInfoDialogState = AppsInfoDialogState()
-                },
-                onSettingsClick = {
-                    navController.navigate("${Route.EditApp.argumentlessPath}${app.trackedApp.packageName}") {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                    appsInfoDialogState = AppsInfoDialogState()
-                }
-            )
+                )
+            }
         }
     }
 
@@ -174,10 +184,14 @@ fun AppsPage(
                             AppCard(
                                 app = it,
                                 onClick = {
-                                    appsInfoDialogState = AppsInfoDialogState(
+                                    bottomSheetOpen = AppsInfoDialogState(
+                                        enabled = true,
+                                        app = it
+                                    )
+                                    /*appsInfoDialogState = AppsInfoDialogState(
                                         enabled = true,
                                         app = it,
-                                    )
+                                    )*/
                                 },
                                 onCheckedChange = { state ->
                                     viewModel.setAppOpenedStatus(it, state)
@@ -249,55 +263,55 @@ fun AppListItem(
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppInfoDialog(
+fun AppInfoBottomSheet(
     onDismissRequest: () -> Unit,
+    sheetState: SheetState,
     app: AppsScreenApp,
     onOpenClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    // Visibility state for the dialog which will trigger it only once when called
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val label = app.label
-                Spacer(modifier = Modifier.padding(bottom = 30.dp))
-                Image(
-                    modifier = Modifier.size(60.dp),
-                    painter = rememberDrawablePainter(drawable = app.icon),
-                    contentDescription = label,
-                    contentScale = ContentScale.FillHeight,
-                )
-                Spacer(modifier = Modifier.padding(bottom = 5.dp))
-                Text(
-                    text = label!!,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                TrackedAppLastOpenedText(
-                    trackedApp = app.trackedApp,
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(modifier = Modifier.padding(bottom = 10.dp))
-                AppInfoDialogCard(
-                    icon = R.drawable.open_icon,
-                    text = R.string.apps_info_dialog_open_app_headline,
-                    onClick = onOpenClick
-                )
-                AppInfoDialogCard(
-                    icon = R.drawable.settings_icon,
-                    text = R.string.apps_info_dialog_settings_headline,
-                    onClick = onSettingsClick
-                )
-            }
-        },
-        confirmButton = {}
-    )
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val label = app.label
+            Image(
+                modifier = Modifier.size(60.dp),
+                painter = rememberDrawablePainter(drawable = app.icon),
+                contentDescription = label,
+                contentScale = ContentScale.FillHeight,
+            )
+            Spacer(modifier = Modifier.padding(bottom = 5.dp))
+            Text(
+                text = label!!,
+                style = MaterialTheme.typography.titleLarge
+            )
+            TrackedAppLastOpenedText(
+                trackedApp = app.trackedApp,
+                style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(modifier = Modifier.padding(bottom = 10.dp))
+            AppInfoDialogCard(
+                icon = R.drawable.open_icon,
+                text = R.string.apps_info_dialog_open_app_headline,
+                onClick = onOpenClick
+            )
+            AppInfoDialogCard(
+                icon = R.drawable.settings_icon,
+                text = R.string.apps_info_dialog_settings_headline,
+                onClick = onSettingsClick
+            )
+        }
+    }
 }
 
 @Composable
