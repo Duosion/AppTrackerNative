@@ -12,6 +12,9 @@
     <string name="settings_oled_mode_setting_name">Pure black dark mode</string>
     <string name="settings_theme_setting_name">Theme</string>
 
+    <string name="settings_random_theme_setting_name">Random theme</string>
+    <string name="settings_random_theme_setting_sub_text">Selects a random theme on app launch.</string>
+
     <string name="settings_dark_mode_off_value_name">Off</string>
     <string name="settings_dark_mode_on_value_name">On</string>
     <string name="settings_dark_mode_system_default_value_name">System Default</string>

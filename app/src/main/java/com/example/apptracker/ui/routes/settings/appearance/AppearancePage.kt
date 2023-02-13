@@ -10,12 +10,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
+import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.ui.routes.settings.DialogListItem
 import com.example.apptracker.ui.routes.settings.SettingsDialogListItemCard
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.settings.values.DarkModeValues
 import com.example.apptracker.util.data.settings.values.OledModeValues
+import com.example.apptracker.util.data.settings.values.RandomThemeValues
 import com.example.apptracker.util.data.settings.values.ThemeValues
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +42,7 @@ fun AppearancePage (
         val darkModeSetting = screenState.darkModeValue
         val themeSetting = screenState.themeValue
         val oledModeEnabled = screenState.oledModeValue == OledModeValues.ON
+        val randomThemeEnabled = screenState.randomThemeValue == RandomThemeValues.ON
 
         Column(
             modifier = Modifier
@@ -64,24 +67,24 @@ fun AppearancePage (
                     viewModel.setDarkModeValue(it.value as Int)
                 }
             )
-            SettingsDialogListItemCard(
-                dialogTitle = R.string.settings_theme_setting_name,
-                headlineText = { Text(stringResource(id = R.string.settings_theme_setting_name)) },
-                supportingText = {
-                    Text(stringResource(id = themeSetting.valueName))
-                },
-                values = ThemeValues.values().map {
-                    DialogListItem(
-                        name = stringResource(it.valueName),
-                        value = it.id
-                    )
-                },
-                selectedValue = themeSetting.id,
-                onSelect = {
-                    viewModel.setThemeValue(it.value as Int)
-                }
-            ) {
-
+            if (!randomThemeEnabled) {
+                SettingsDialogListItemCard(
+                    dialogTitle = R.string.settings_theme_setting_name,
+                    headlineText = { Text(stringResource(id = R.string.settings_theme_setting_name)) },
+                    supportingText = {
+                        Text(stringResource(id = themeSetting.valueName))
+                    },
+                    values = ThemeValues.values().map {
+                        DialogListItem(
+                            name = stringResource(it.valueName),
+                            value = it.id
+                        )
+                    },
+                    selectedValue = themeSetting.id,
+                    onSelect = {
+                        viewModel.setThemeValue(it.value as Int)
+                    }
+                )
             }
             val isOledToggleEnabled = darkModeSetting != DarkModeValues.OFF
             if (isOledToggleEnabled) {
@@ -101,7 +104,23 @@ fun AppearancePage (
                     }
                 )
             }
-
+            SettingsListItemCard(
+                headlineText = { Text(stringResource(id = R.string.settings_random_theme_setting_name)) },
+                supportingText = {
+                    ResourceText(id = R.string.settings_random_theme_setting_sub_text)
+                },
+                trailingContent = {
+                    Switch(
+                        checked = randomThemeEnabled,
+                        onCheckedChange = null
+                    )
+                },
+                onClick = {
+                    viewModel.setRandomThemeValue(
+                        id = if (randomThemeEnabled) 0 else 1
+                    )
+                }
+            )
         }
     }
 }

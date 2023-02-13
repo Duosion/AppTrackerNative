@@ -1,11 +1,5 @@
 package com.example.apptracker.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import android.view.View
-import android.view.WindowInsets.Side
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,10 +7,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.ViewCompat
 import com.example.apptracker.ui.routes.settings.appearance.AppearanceViewModel
 import com.example.apptracker.ui.theme.greenapple.darkGreenAppleColorScheme
 import com.example.apptracker.ui.theme.greenapple.lightGreenAppleColorScheme

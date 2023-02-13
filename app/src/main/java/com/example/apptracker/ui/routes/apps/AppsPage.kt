@@ -48,7 +48,7 @@ fun AppsPage(
     
     val coroutineScope = rememberCoroutineScope()
 
-    var bottomSheetOpen by remember { mutableStateOf(AppsInfoDialogState()) }
+    var bottomSheetOpen by remember { mutableStateOf(AppsInfoSheetState()) }
     val bottomSheetState = rememberSheetState(
         skipHalfExpanded = false
     )
@@ -77,7 +77,7 @@ fun AppsPage(
         bottomSheetOpen.enabled && bottomSheetOpen.app != null -> {
             bottomSheetOpen.app?.let { app ->
                 AppInfoBottomSheet(
-                    onDismissRequest = { bottomSheetOpen = AppsInfoDialogState() },
+                    onDismissRequest = { bottomSheetOpen = AppsInfoSheetState() },
                     sheetState = bottomSheetState,
                     app = app,
                     onOpenClick = {
@@ -184,7 +184,7 @@ fun AppsPage(
                             AppCard(
                                 app = it,
                                 onClick = {
-                                    bottomSheetOpen = AppsInfoDialogState(
+                                    bottomSheetOpen = AppsInfoSheetState(
                                         enabled = true,
                                         app = it
                                     )
