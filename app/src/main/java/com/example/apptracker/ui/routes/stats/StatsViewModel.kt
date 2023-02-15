@@ -31,7 +31,7 @@ class StatsViewModel(
 
     private fun refreshUsageTime() = viewModelScope.launch {
         val rangeEnd = System.currentTimeMillis()
-        val rangeStart = rangeEnd - (1000 * 60 * 60 * 24 * 7)
+        val rangeStart = rangeEnd - ((1000 * 60 * 60 * 24 * 7) + (1000 * 60 * 60 * 5))
         withContext(Dispatchers.IO) {
 
             /*openLogDao.getOpenedStreaks().collectLatest { openStreaks ->

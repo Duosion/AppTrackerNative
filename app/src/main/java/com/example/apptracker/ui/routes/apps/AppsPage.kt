@@ -54,7 +54,11 @@ fun AppsPage(
     )
 
     fun hideBottomSheet() {
-
+        coroutineScope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+            if (!bottomSheetState.isVisible) {
+                bottomSheetOpen = AppsInfoSheetState()
+            }
+        }
     }
 
     val pagerState = rememberPagerState()
@@ -274,7 +278,8 @@ fun AppInfoBottomSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        sheetState = sheetState
+        sheetState = sheetState,
+        tonalElevation = 3.dp
     ) {
         Column(
             modifier = Modifier
