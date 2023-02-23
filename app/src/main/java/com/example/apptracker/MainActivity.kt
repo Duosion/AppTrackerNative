@@ -193,7 +193,11 @@ class MainActivity : ComponentActivity() {
                                     viewModel = statsViewModel
                                 )
                             }
-                            composable(Route.UsageStats.path) { backStackEntry ->
+                            composable(
+                                route = Route.UsageStats.path,
+                                enterTransition = {slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }
+                            ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -204,7 +208,11 @@ class MainActivity : ComponentActivity() {
                                     defaultSelectedBar = backStackEntry.arguments?.getString("selectedBar")?.toInt() ?: 0
                                 )
                             }
-                            composable(Route.AllTimeUsageStats.path) {
+                            composable(
+                                route = Route.AllTimeUsageStats.path,
+                                enterTransition = {slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }
+                            ) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -214,7 +222,11 @@ class MainActivity : ComponentActivity() {
                                     viewModel = statsViewModel
                                 )
                             }
-                            composable(Route.AddApp.path) { backStackEntry ->
+                            composable(
+                                route = Route.AddApp.path,
+                                enterTransition = {slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }
+                            ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -222,11 +234,11 @@ class MainActivity : ComponentActivity() {
                                 val packageName: String? =
                                     backStackEntry.arguments?.getString("packageName")
                                 val appsManager = AppsManager(packageManager)
+                                val appInfo = if (packageName != null) appsManager.getApp(packageName) else null
 
-                                if (packageName == null) {
+                                if (appInfo == null || packageName == null) {
                                     navController.popBackStack()
                                 } else {
-                                    val appInfo = appsManager.getApp(packageName)
                                     AddAppPage(
                                         navController = navController,
                                         appInfo = appInfo,
@@ -235,7 +247,11 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                            composable(Route.EditApp.path) { backStackEntry ->
+                            composable(
+                                route = Route.EditApp.path,
+                                enterTransition = { slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }
+                            ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
                                 }
@@ -243,11 +259,11 @@ class MainActivity : ComponentActivity() {
                                 val packageName: String? =
                                     backStackEntry.arguments?.getString("packageName")
                                 val appsManager = AppsManager(packageManager)
+                                val appInfo = if (packageName != null) appsManager.getApp(packageName) else null
 
-                                if (packageName == null) {
+                                if (appInfo == null || packageName == null) {
                                     navController.popBackStack()
                                 } else {
-                                    val appInfo = appsManager.getApp(packageName)
                                     AddAppPage(
                                         navController = navController,
                                         appInfo = appInfo,

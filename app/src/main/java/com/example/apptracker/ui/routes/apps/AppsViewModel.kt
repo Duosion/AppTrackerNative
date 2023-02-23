@@ -62,14 +62,18 @@ class AppsViewModel(
             _screenState.update {
                 it.copy(
                     apps = trackedAppDao.getAll().map { flow ->
-                        flow.map { trackedApp ->
+                        flow.mapNotNull { trackedApp ->
                             val appInfo = appsManager.getApp(trackedApp.packageName)
-                            AppsScreenApp(
-                                trackedApp = trackedApp,
-                                appInfo = appInfo,
-                                label = appInfo.loadLabel(packageManager).toString(),
-                                icon = appInfo.loadIcon(packageManager)
-                            )
+                            if (appInfo == null) {
+                                null
+                            } else {
+                                AppsScreenApp(
+                                    trackedApp = trackedApp,
+                                    appInfo = appInfo,
+                                    label = appInfo.loadLabel(packageManager).toString(),
+                                    icon = appInfo.loadIcon(packageManager)
+                                )
+                            }
                         }.sortedBy { app -> app.label }
                     }
                 )

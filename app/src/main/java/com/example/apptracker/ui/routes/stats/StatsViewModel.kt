@@ -19,7 +19,6 @@ class StatsViewModel(
 
     private val appsManager = AppsManager(packageManager)
     private val trackedAppDao = database.trackedAppDao()
-    private val openLogDao = database.openLogDao()
     private val usageTimeManager = UsageTimeManager(database)
 
     private val _screenState = MutableStateFlow(StatsScreenState())
@@ -43,11 +42,13 @@ class StatsViewModel(
 
                 trackedApps.forEach { trackedApp ->
                     val appInfo = appsManager.getApp(trackedApp.packageName)
-                    appsInfo[appInfo.packageName] = StatsScreenAppInfo(
-                        appInfo = appInfo,
-                        label = appInfo.loadLabel(packageManager).toString(),
-                        icon = appInfo.loadIcon(packageManager)
-                    )
+                    if (appInfo != null) {
+                        appsInfo[appInfo.packageName] = StatsScreenAppInfo(
+                            appInfo = appInfo,
+                            label = appInfo.loadLabel(packageManager).toString(),
+                            icon = appInfo.loadIcon(packageManager)
+                        )
+                    }
                 }
 
                 _screenState.update {

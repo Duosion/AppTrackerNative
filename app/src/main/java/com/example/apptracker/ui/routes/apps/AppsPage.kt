@@ -182,7 +182,6 @@ fun AppsPage(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        // contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp),
                     ) {
                         items(items, key = { it.trackedApp.packageName }) {
                             AppCard(
@@ -192,10 +191,6 @@ fun AppsPage(
                                         enabled = true,
                                         app = it
                                     )
-                                    /*appsInfoDialogState = AppsInfoDialogState(
-                                        enabled = true,
-                                        app = it,
-                                    )*/
                                 },
                                 onCheckedChange = { state ->
                                     viewModel.setAppOpenedStatus(it, state)

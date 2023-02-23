@@ -1,5 +1,6 @@
 package com.example.apptracker.util.notifications
 
+import android.Manifest
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
@@ -14,7 +15,9 @@ import com.example.apptracker.util.receivers.TrackedAppReminderAlarmReceiver
 import java.time.*
 import java.time.temporal.ChronoUnit
 import android.app.PendingIntent
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.ActivityCompat
 
 
 class AppNotificationChannel(
@@ -103,21 +106,6 @@ class AppNotificationChannel(
                 pendingAlarmIntent
             )
         }
-
-        println("Schedule ${trackedApp.packageName} reminder for $secondsDifference seconds from now. Day start: $dayStartDate, reminder date: $reminderDate")
-
-        /*val workerData = Data.Builder()
-            .putString("package_name", packageName)
-            .putString("notification_channel",channelId)
-            .build()
-
-        val reminderWorker = PeriodicWorkRequestBuilder<TrackedAppReminderWorker>(1, TimeUnit.DAYS)
-            .addTag(packageName)
-            .setInputData(workerData)
-            .setInitialDelay(secondsDifference, TimeUnit.SECONDS)
-            .build()
-
-        workManager.enqueueUniquePeriodicWork(packageName, ExistingPeriodicWorkPolicy.REPLACE, reminderWorker)*/
     }
 
     fun cancelTrackedAppReminder(trackedApp: TrackedApp) {
@@ -128,24 +116,27 @@ class AppNotificationChannel(
         val packageName = trackedApp.packageName
 
         val appInfo = appsManager.getApp(packageName)
-        val label = appInfo.loadLabel(packageManager)
+        if (appInfo != null) {
+            val label = appInfo.loadLabel(packageManager)
 
-        val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.app_icon)
-            .setContentTitle(label)
-            .setContentText("Day start is approaching for $label.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
+            val builder = NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.drawable.app_icon)
+                .setContentTitle(label)
+                .setContentText("Day start is approaching for $label.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
 
-        packageManager.getLaunchIntentForPackage(packageName)?.let {
-            val pending = PendingIntent.getActivity(context, 0, it,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            builder.setContentIntent(pending)
+            packageManager.getLaunchIntentForPackage(packageName)?.let {
+                val pending = PendingIntent.getActivity(context, 0, it,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                builder.setContentIntent(pending)
+            }
+
+            with(NotificationManagerCompat.from(context)) {
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    notify(appInfo.uid, builder.build())
+                }
+            }
         }
-
-        with(NotificationManagerCompat.from(context)) {
-            notify(appInfo.uid, builder.build())
-        }
-
     }
 
     fun scheduleTrackedAppsReminders(
