@@ -178,6 +178,17 @@ fun AppsPage(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ResourceText(R.string.apps_empty_list_text)
+                        Button(
+                            modifier = Modifier.padding(top = 10.dp),
+                            onClick = {
+                                navController.navigate(Route.AddApps.path) {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        ) {
+                            ResourceText(R.string.apps_add_app_title)
+                        }
                     }
                 } else {
                     LazyColumn(
