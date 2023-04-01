@@ -251,9 +251,12 @@ fun AppListItem(
         modifier = Modifier.fillMaxSize(),
         headlineText = { Text(label!!) },
         leadingContent = {
+            if (app.painter == null) {
+                app.painter = rememberDrawablePainter(drawable = app.icon)
+            }
             Image(
                 modifier = Modifier.size(48.dp),
-                painter = rememberDrawablePainter(drawable = app.icon),
+                painter = app.painter!!,
                 contentDescription = label,
                 contentScale = ContentScale.FillHeight,
             )
@@ -297,7 +300,7 @@ fun AppInfoBottomSheet(
             val label = app.label
             Image(
                 modifier = Modifier.size(60.dp),
-                painter = rememberDrawablePainter(drawable = app.icon),
+                painter = app.painter ?: rememberDrawablePainter(drawable = app.icon),
                 contentDescription = label,
                 contentScale = ContentScale.FillHeight,
             )
