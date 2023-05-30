@@ -50,7 +50,7 @@ fun GeneralPage(
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
                     val context = LocalContext.current
                     SettingsListItemCard(
-                        headlineText = { ResourceText(id = R.string.settings_general_mangage_notifications_headline) },
+                        headlineContent = { ResourceText(id = R.string.settings_general_mangage_notifications_headline) },
                         onClick = {
                             val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

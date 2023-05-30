@@ -2,11 +2,14 @@ package com.example.apptracker.ui.routes.apps
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -30,12 +33,9 @@ import com.example.apptracker.ui.components.TrackedAppLastOpenedText
 import com.example.apptracker.ui.routes.settings.SettingsListItemCard
 import com.example.apptracker.util.navigation.Route
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppsPage(
     navController: NavController,
@@ -49,8 +49,8 @@ fun AppsPage(
     val coroutineScope = rememberCoroutineScope()
 
     var bottomSheetOpen by remember { mutableStateOf(AppsInfoSheetState()) }
-    val bottomSheetState = rememberSheetState(
-        skipHalfExpanded = false
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
     )
 
     fun hideBottomSheet() {
@@ -61,7 +61,12 @@ fun AppsPage(
         }
     }
 
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        initialPageOffsetFraction = 0f
+    ) {
+        categories.count()
+    }
     viewModel.syncPager(pagerState)
 
     val lifeCycleOwner = LocalLifecycleOwner.current
@@ -161,7 +166,6 @@ fun AppsPage(
                 Divider()
             }
             HorizontalPager(
-                count = categories.count(),
                 state = pagerState
             ) { page ->
                 val category = categories[page]
@@ -249,7 +253,7 @@ fun AppListItem(
     val label = app.label
     ListItem(
         modifier = Modifier.fillMaxSize(),
-        headlineText = { Text(label!!) },
+        headlineContent = { Text(label!!) },
         leadingContent = {
             if (app.painter == null) {
                 app.painter = rememberDrawablePainter(drawable = app.icon)
@@ -261,7 +265,7 @@ fun AppListItem(
                 contentScale = ContentScale.FillHeight,
             )
         },
-        supportingText = {
+        supportingContent = {
             TrackedAppLastOpenedText(app.trackedApp)
         },
         trailingContent = {
@@ -341,7 +345,7 @@ fun AppInfoDialogCard(
                 contentDescription = stringResource(id = text)
             )
         },
-        headlineText = {
+        headlineContent = {
             ResourceText(text)
         },
         onClick = onClick

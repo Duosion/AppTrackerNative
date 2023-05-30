@@ -39,31 +39,36 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.2'
+        kotlinCompilerExtensionVersion '1.4.7'
     }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += "META-INF/"
+            excludes += "okhttp3/"
+            excludes += "kotlin/"
+            excludes += "org/"
+            excludes += ".properties"
+            excludes += ".bin"
         }
     }
 }
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
-    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation 'androidx.activity:activity-compose:1.7.2'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.compose.material3:material3:1.1.0-alpha06'
-    implementation 'com.google.accompanist:accompanist-flowlayout:0.28.0'
-    implementation 'com.google.accompanist:accompanist-navigation-animation:0.28.0'
-    implementation 'com.google.accompanist:accompanist-drawablepainter:0.28.0'
-    implementation 'com.google.accompanist:accompanist-systemuicontroller:0.28.0'
-    implementation "com.google.accompanist:accompanist-pager:0.28.0"
-    implementation "androidx.datastore:datastore-preferences:1.1.0-alpha01"
-    implementation 'com.marosseleng.android:compose-material3-datetime-pickers:0.2.0'
-    implementation 'androidx.work:work-runtime-ktx:2.8.0'
+    implementation 'androidx.compose.material3:material3:1.2.0-alpha02'
+    implementation 'com.google.accompanist:accompanist-flowlayout:0.31.3-beta'
+    implementation 'com.google.accompanist:accompanist-navigation-animation:0.31.3-beta'
+    implementation 'com.google.accompanist:accompanist-drawablepainter:0.31.3-beta'
+    implementation 'com.google.accompanist:accompanist-systemuicontroller:0.31.3-beta'
+    implementation 'androidx.datastore:datastore-preferences:1.1.0-alpha04'
+    implementation 'com.marosseleng.android:compose-material3-datetime-pickers:0.7.1'
+    implementation 'androidx.work:work-runtime-ktx:2.8.1'
     // room
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"

@@ -66,8 +66,8 @@ fun SettingsListEntry(
 ) {
     val headline = listItem.headline
     SettingsListItemCard(
-        headlineText = { Text(stringResource(id = headline)) },
-        supportingText = { Text(stringResource(id = listItem.supporting)) },
+        headlineContent = { Text(stringResource(id = headline)) },
+        supportingContent = { Text(stringResource(id = listItem.supporting)) },
         leadingContent = { Icon(
             painter = painterResource(id = listItem.icon),
             contentDescription = stringResource(headline),
@@ -89,9 +89,9 @@ fun SettingsListEntry(
 @Composable
 fun SettingsListItemCard(
     enabled: Boolean = true,
-    headlineText: @Composable () -> Unit,
-    overlineText: @Composable (() -> Unit)? = null,
-    supportingText: @Composable (() -> Unit)? = null,
+    headlineContent: @Composable () -> Unit,
+    overlineContent: @Composable (() -> Unit)? = null,
+    supportingContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit = {}
@@ -103,9 +103,9 @@ fun SettingsListItemCard(
             .fillMaxWidth(),
         enabled = enabled,
         shape = RoundedCornerShape(20.dp),
-        headlineText = headlineText,
-        overlineText = overlineText,
-        supportingText = supportingText,
+        headlineContent = headlineContent,
+        overlineContent = overlineContent,
+        supportingContent = supportingContent,
         leadingContent = leadingContent,
         trailingContent = trailingContent,
         onClick = onClick
@@ -120,9 +120,9 @@ data class DialogListItem(
 @Composable
 fun SettingsDialogListItemCard(
     enabled: Boolean = true,
-    headlineText: @Composable () -> Unit,
-    overlineText: @Composable (() -> Unit)? = null,
-    supportingText: @Composable (() -> Unit)? = null,
+    headlineContent: @Composable () -> Unit,
+    overlineContent: @Composable (() -> Unit)? = null,
+    supportingContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     values: List<DialogListItem> = listOf(),
@@ -194,9 +194,9 @@ fun SettingsDialogListItemCard(
 
     SettingsListItemCard(
         enabled = enabled,
-        headlineText = headlineText,
-        overlineText = overlineText,
-        supportingText = supportingText,
+        headlineContent = headlineContent,
+        overlineContent = overlineContent,
+        supportingContent = supportingContent,
         leadingContent = leadingContent,
         trailingContent = trailingContent,
         onClick = {

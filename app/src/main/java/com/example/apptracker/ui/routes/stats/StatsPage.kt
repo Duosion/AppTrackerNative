@@ -133,10 +133,10 @@ fun StatsPage(
                             .padding(bottom = 10.dp)
                             .fillMaxWidth(),
                         tonalElevation = 1.dp,
-                        headlineText = {
+                        headlineContent = {
                             ElapsedTimeText(elapsedTime = allTimeUsageTime.combinedUsageTime)
                         },
-                        supportingText = {
+                        supportingContent = {
                             ResourceText(id = R.string.stats_all_time_usage_time_label)
                         },
                         trailingContent = {
@@ -225,7 +225,7 @@ fun UsageStatsListItem(
     val label = app.label
     ListItem(
         modifier = Modifier.fillMaxSize(),
-        headlineText = {
+        headlineContent = {
             Row(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically

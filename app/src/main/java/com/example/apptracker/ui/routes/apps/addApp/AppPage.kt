@@ -188,8 +188,8 @@ fun AddAppPage(
                 Spacer(modifier = Modifier.padding(bottom = 10.dp))
                 val dayStartIsUTC = trackedApp?.dayStartIsUTC ?: defaultTrackedApp.dayStartIsUTC
                 SettingsListItemCard(
-                    headlineText = { ResourceText(id = R.string.apps_add_app_day_start_headline) },
-                    supportingText = {
+                    headlineContent = { ResourceText(id = R.string.apps_add_app_day_start_headline) },
+                    supportingContent = {
                         val suffix = if (dayStartIsUTC) " UTC" else ""
                         Text(dayStart.format(dateTimeFormatter) + suffix)
                     },
@@ -199,7 +199,7 @@ fun AddAppPage(
                 )
 
                 SettingsListItemCard(
-                    headlineText = { ResourceText(id = R.string.apps_add_app_day_start_utc_headline) },
+                    headlineContent = { ResourceText(id = R.string.apps_add_app_day_start_utc_headline) },
                     trailingContent = {
                         Switch(
                             checked = dayStartIsUTC,
@@ -214,7 +214,7 @@ fun AddAppPage(
                     val zoned = dayStart.atOffset(ZoneOffset.UTC).withOffsetSameInstant(ZonedDateTime.now().offset)
                     val formattedDate = zoned.format(dateTimeFormatter)
                     ListItem(
-                        headlineText = {
+                        headlineContent = {
                             Text(stringResource(id = R.string.apps_add_app_day_start_utc_conversion_headline).format(formattedDate))
                         }
                     )
@@ -223,8 +223,8 @@ fun AddAppPage(
                 // reminder notification stuff
                 val reminderNotification = trackedApp?.reminderNotification ?: defaultTrackedApp.reminderNotification
                 SettingsListItemCard(
-                    headlineText = { ResourceText(id = R.string.apps_add_app_reminder_notification_headline) },
-                    supportingText = { ResourceText(id = R.string.apps_add_app_reminder_notification_supporting) },
+                    headlineContent = { ResourceText(id = R.string.apps_add_app_reminder_notification_headline) },
+                    supportingContent = { ResourceText(id = R.string.apps_add_app_reminder_notification_supporting) },
                     trailingContent = {
                         Switch(
                             checked = reminderNotification,
@@ -238,7 +238,7 @@ fun AddAppPage(
                 if (reminderNotification) {
                     if (!AppNotificationChannel.canScheduleExactAlarms(context)) {
                         SettingsListItemCard(
-                            headlineText = {
+                            headlineContent = {
                                 ResourceText(
                                     id = R.string.permission_schedule_exact_alarms_warning,
                                     color = MaterialTheme.colorScheme.error
@@ -257,9 +257,9 @@ fun AddAppPage(
                     val currentOffset = TrackedAppReminderOffset.fromId(trackedApp?.reminderOffset ?: defaultTrackedApp.reminderOffset)
                     // show offset picker
                     SettingsDialogListItemCard(
-                        headlineText = { ResourceText(id = R.string.apps_add_app_reminder_offset_headline) },
+                        headlineContent = { ResourceText(id = R.string.apps_add_app_reminder_offset_headline) },
                         dialogTitle = R.string.apps_add_app_reminder_offset_headline_dialog_name,
-                        supportingText = {
+                        supportingContent = {
                             ResourceText(currentOffset.valueName)
                         },
                         values = TrackedAppReminderOffset.values().map {
@@ -276,8 +276,8 @@ fun AddAppPage(
                     if (currentOffset == TrackedAppReminderOffset.CUSTOM) {
 
                         SettingsListItemCard(
-                            headlineText = { ResourceText(id = R.string.apps_add_app_reminder_offset_custom_offset_headline) },
-                            supportingText = {
+                            headlineContent = { ResourceText(id = R.string.apps_add_app_reminder_offset_custom_offset_headline) },
+                            supportingContent = {
                                 Text(
                                     customOffsetTime.format(dateTimeFormatter)
                                 )
@@ -294,8 +294,8 @@ fun AddAppPage(
                     val selectedCategory = categories.find { it.id == trackedAppCatId } ?: categories.first()
                     SettingsDialogListItemCard(
                         dialogTitle = R.string.apps_add_app_category_dialog_headline,
-                        headlineText = { ResourceText(id = R.string.apps_add_app_category_headline) },
-                        supportingText = {
+                        headlineContent = { ResourceText(id = R.string.apps_add_app_category_headline) },
+                        supportingContent = {
                             Text(selectedCategory.name)
                         },
                         values = categories.map {

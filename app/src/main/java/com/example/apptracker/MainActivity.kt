@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
         workManager.enqueueUniquePeriodicWork(openedStatusWorkerTag, ExistingPeriodicWorkPolicy.KEEP, openedStatusWorker)
     }
 
-    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         tryPermissions()
@@ -195,8 +195,8 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(
                                 route = Route.UsageStats.path,
-                                enterTransition = {slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }
+                                /*enterTransition = { slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }*/
                             ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -210,8 +210,8 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(
                                 route = Route.AllTimeUsageStats.path,
-                                enterTransition = {slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }
+                                /*enterTransition = {slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }*/
                             ) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -224,8 +224,8 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(
                                 route = Route.AddApp.path,
-                                enterTransition = {slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }
+                                /*enterTransition = {slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }*/
                             ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -249,8 +249,8 @@ class MainActivity : ComponentActivity() {
                             }
                             composable(
                                 route = Route.EditApp.path,
-                                enterTransition = { slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }
+                                /*enterTransition = { slideInHorizontally { it } },
+                                exitTransition = { slideOutHorizontally { it } }*/
                             ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false

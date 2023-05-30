@@ -74,8 +74,8 @@ fun MostListEntry(
         val headline = listItem.headline
         ListItem(
             modifier = Modifier.fillMaxSize(),
-            headlineText = { Text(stringResource(id = headline)) },
-            supportingText = {Text(stringResource(id = listItem.supporting))},
+            headlineContent = { Text(stringResource(id = headline)) },
+            supportingContent = {Text(stringResource(id = listItem.supporting))},
             leadingContent = { Icon(
                 painter = painterResource(id = listItem.icon),
                 contentDescription = stringResource(headline),

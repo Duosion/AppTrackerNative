@@ -37,11 +37,15 @@ fun UsageStatsPage(
 ) {
     val screenState by viewModel.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(
-        initialPage = defaultSelectedBar
-    )
-
     val usageTimes = screenState.usageTime
+
+    val pagerState = rememberPagerState(
+        initialPage = defaultSelectedBar,
+        initialPageOffsetFraction = 0f
+    ) {
+        usageTimes.count()
+    }
+
     val appsInfo = screenState.appsInfo
 
     Scaffold (
@@ -85,7 +89,6 @@ fun UsageStatsPage(
             }
 
             HorizontalPager(
-                pageCount = usageTimes.count(),
                 state = pagerState
             ) { page ->
                 val selectedUsageTime = usageTimes[page]

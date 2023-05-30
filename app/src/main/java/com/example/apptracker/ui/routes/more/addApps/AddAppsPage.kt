@@ -128,10 +128,10 @@ fun AddAppListEntry(
     ) {
         ListItem(
             modifier = Modifier.fillMaxSize(),
-            headlineText = {
+            headlineContent = {
                 Text(label)
             },
-            supportingText = {
+            supportingContent = {
                 when (sortMode) {
                     SortFunction.Size -> {
                         val file = File(appInfo.publicSourceDir)

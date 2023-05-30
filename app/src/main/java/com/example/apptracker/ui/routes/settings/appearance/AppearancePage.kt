@@ -52,8 +52,8 @@ fun AppearancePage (
 
             SettingsDialogListItemCard(
                 dialogTitle = R.string.settings_dark_mode_setting_name,
-                headlineText = { Text(stringResource(id = R.string.settings_dark_mode_setting_name)) },
-                supportingText = {
+                headlineContent = { Text(stringResource(id = R.string.settings_dark_mode_setting_name)) },
+                supportingContent = {
                     Text(stringResource(id = darkModeSetting.valueName))
                 },
                 values = DarkModeValues.values().map {
@@ -70,8 +70,8 @@ fun AppearancePage (
             if (!randomThemeEnabled) {
                 SettingsDialogListItemCard(
                     dialogTitle = R.string.settings_theme_setting_name,
-                    headlineText = { Text(stringResource(id = R.string.settings_theme_setting_name)) },
-                    supportingText = {
+                    headlineContent = { Text(stringResource(id = R.string.settings_theme_setting_name)) },
+                    supportingContent = {
                         Text(stringResource(id = themeSetting.valueName))
                     },
                     values = ThemeValues.values().map {
@@ -90,7 +90,7 @@ fun AppearancePage (
             if (isOledToggleEnabled) {
                 Divider()
                 SettingsListItemCard(
-                    headlineText = { Text(stringResource(id = R.string.settings_oled_mode_setting_name)) },
+                    headlineContent = { Text(stringResource(id = R.string.settings_oled_mode_setting_name)) },
                     trailingContent = {
                         Switch(
                             checked = oledModeEnabled,
@@ -105,8 +105,8 @@ fun AppearancePage (
                 )
             }
             SettingsListItemCard(
-                headlineText = { Text(stringResource(id = R.string.settings_random_theme_setting_name)) },
-                supportingText = {
+                headlineContent = { Text(stringResource(id = R.string.settings_random_theme_setting_name)) },
+                supportingContent = {
                     ResourceText(id = R.string.settings_random_theme_setting_sub_text)
                 },
                 trailingContent = {

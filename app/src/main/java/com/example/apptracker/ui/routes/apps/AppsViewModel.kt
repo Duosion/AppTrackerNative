@@ -1,6 +1,8 @@
 package com.example.apptracker.ui.routes.apps
 
 import android.content.pm.PackageManager
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.PagerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.apptracker.util.apps.AppsManager
@@ -8,8 +10,6 @@ import com.example.apptracker.util.apps.TrackedAppsManager
 import com.example.apptracker.util.data.AppDatabase
 import com.example.apptracker.util.data.categories.CategoriesRepository
 import com.example.apptracker.util.data.tabs.TabState
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -81,7 +81,7 @@ class AppsViewModel(
         }
     }
 
-    @OptIn(ExperimentalPagerApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     fun syncPager(pagerState: PagerState) = viewModelScope.launch {
         if (!_screenState.value.pagerSynced) {
             _screenState.update {
@@ -95,7 +95,7 @@ class AppsViewModel(
         }
     }
 
-    @OptIn(ExperimentalPagerApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     fun syncTabState(pagerState: PagerState) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             val updatedTabState = TabState(
