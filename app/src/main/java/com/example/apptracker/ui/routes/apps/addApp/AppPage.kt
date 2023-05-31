@@ -5,8 +5,10 @@ import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +23,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.apptracker.R
 import com.example.apptracker.ui.components.BackTopAppBar
+import com.example.apptracker.ui.components.ListItemCard
 import com.example.apptracker.ui.components.ResourceText
 import com.example.apptracker.ui.components.TextDialog
 import com.example.apptracker.ui.components.TrackedAppLastOpenedText
@@ -130,18 +133,6 @@ fun AddAppPage(
                     },
                     onBack = {
                         navController.popBackStack()
-                    },
-                    actions = {
-                        if (mode == AppPageMode.EDIT) {
-                            IconButton(
-                                onClick = { deleteConfirmDialogEnabled = true }
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.delete_icon),
-                                    contentDescription = stringResource(id = R.string.apps_edit_app_delete_confirm_dialog_title)
-                                )
-                            }
-                        }
                     }
                 )
             },
@@ -184,6 +175,37 @@ fun AddAppPage(
                 )
                 if (mode == AppPageMode.EDIT) {
                     TrackedAppLastOpenedText(trackedApp = trackedApp ?: defaultTrackedApp)
+                    Spacer(modifier = Modifier.padding(bottom = 20.dp))
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp),
+                                shape = RoundedCornerShape(20.dp)
+                            )
+                            .padding(10.dp)
+                    ) {
+                        EditAppContextButton(
+                            modifier = Modifier.fillMaxWidth(0.5f),
+                            text = R.string.apps_edit_app_open_button,
+                            icon = R.drawable.open_icon,
+                            onClick = {
+                                val intent =
+                                    context.packageManager.getLaunchIntentForPackage(appInfo.packageName)
+                                if (intent != null) {
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    ContextCompat.startActivity(context, intent, null)
+                                }
+                            }
+                        )
+                        EditAppContextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = R.string.apps_edit_app_delete_button,
+                            icon = R.drawable.delete_icon,
+                            onClick = { deleteConfirmDialogEnabled = true }
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.padding(bottom = 10.dp))
                 val dayStartIsUTC = trackedApp?.dayStartIsUTC ?: defaultTrackedApp.dayStartIsUTC
@@ -312,5 +334,26 @@ fun AddAppPage(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EditAppContextButton(
+    modifier: Modifier,
+    text: Int,
+    icon: Int,
+    onClick: () -> Unit = {}
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = modifier.padding(end = 10.dp),
+    ) {
+        Icon(
+            modifier = Modifier.size(ButtonDefaults.IconSize),
+            painter = painterResource(id = icon),
+            contentDescription = stringResource(id = text)
+        )
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        ResourceText(id = text)
     }
 }
