@@ -149,7 +149,7 @@ class MainActivity : ComponentActivity() {
 
                 val packageUsagePermissionGranted = isPackageUsagePermissionAccessGranted(applicationContext)
 
-                val transitionTweenTime = 350 // the transition tween time in ms
+                val transitionTweenTime = 150 // the transition tween time in ms
                 val fadeInTransition =
                     fadeIn(animationSpec = tween(durationMillis = transitionTweenTime))
                 val fadeOutTransition =
@@ -170,12 +170,18 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                             navController = navController,
                             startDestination = if (packageUsagePermissionGranted) Route.Apps.path else Route.PackageUsagePermission.path,
-                            enterTransition = { fadeInTransition },
-                            popEnterTransition = { fadeInTransition },
-                            exitTransition = { fadeOutTransition },
-                            popExitTransition = { fadeOutTransition },
+                            enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(transitionTweenTime)) },
+                            popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) },
+                            exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(transitionTweenTime)) },
+                            popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) },
                         ) {
-                            composable(Route.Apps.path) {
+                            composable(
+                                Route.Apps.path,
+                                enterTransition = { fadeInTransition },
+                                popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) },
+                                exitTransition = { fadeOutTransition },
+                                popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) }
+                            ) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
@@ -184,7 +190,13 @@ class MainActivity : ComponentActivity() {
                                     viewModel = appsViewModel
                                 )
                             }
-                            composable(Route.Stats.path) {
+                            composable(
+                                Route.Stats.path,
+                                enterTransition = { fadeInTransition },
+                                popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) },
+                                exitTransition = { fadeOutTransition },
+                                popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) }
+                            ) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
@@ -194,9 +206,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(
-                                route = Route.UsageStats.path,
-                                /*enterTransition = { slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }*/
+                                route = Route.UsageStats.path
                             ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -209,9 +219,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(
-                                route = Route.AllTimeUsageStats.path,
-                                /*enterTransition = {slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }*/
+                                route = Route.AllTimeUsageStats.path
                             ) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -223,9 +231,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(
-                                route = Route.AddApp.path,
-                                /*enterTransition = {slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }*/
+                                route = Route.AddApp.path
                             ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -248,9 +254,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable(
-                                route = Route.EditApp.path,
-                                /*enterTransition = { slideInHorizontally { it } },
-                                exitTransition = { slideOutHorizontally { it } }*/
+                                route = Route.EditApp.path
                             ) { backStackEntry ->
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = false
@@ -272,7 +276,13 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                            composable(Route.More.path) {
+                            composable(
+                                Route.More.path,
+                                enterTransition = { fadeInTransition },
+                                popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) },
+                                exitTransition = { fadeOutTransition },
+                                popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(transitionTweenTime)) }
+                            ) {
                                 LaunchedEffect(Unit) {
                                     bottomBarState.value = true
                                 }
