@@ -244,7 +244,6 @@ fun AppCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppListItem(
     app: AppsScreenApp,

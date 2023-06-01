@@ -22,6 +22,8 @@ import com.example.apptracker.util.data.apps.TrackedApp
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 
 private const val SECONDS_IN_MINUTE = 60
@@ -51,7 +53,8 @@ fun TrackedAppLastOpenedText(
     val formatter = RelativeDateTimeFormatter.getInstance()
 
     val dateNow = ZonedDateTime.now().toLocalDateTime()
-    val lastOpenedDate = LocalDateTime.ofEpochSecond(trackedApp.openedTimestamp, 0, OffsetDateTime.now().offset)
+    val openedTimestamp = trackedApp.openedTimestamp
+    val lastOpenedDate = LocalDateTime.ofEpochSecond(openedTimestamp, 0, OffsetDateTime.now().offset)
 
     val secondsBetween = ChronoUnit.SECONDS.between(lastOpenedDate, dateNow)
 
@@ -61,6 +64,9 @@ fun TrackedAppLastOpenedText(
     val prefix = if (openedToday) stringResource(id = R.string.apps_tracked_app_last_opened_opened_prefix) else stringResource(id = R.string.apps_tracked_app_last_opened_prefix)
 
     val relativeString = when {
+        openedTimestamp == 0L -> {
+            stringResource(id = R.string.apps_tracked_app_last_opened_default)
+        }
         SECONDS_IN_MINUTE > secondsBetween -> {
             // "Opened now"
             "$prefix ${formatter.format(RelativeDateTimeFormatter.Direction.PLAIN, RelativeDateTimeFormatter.AbsoluteUnit.NOW)}"
@@ -78,8 +84,8 @@ fun TrackedAppLastOpenedText(
             "$prefix ${formatter.format((secondsBetween / SECONDS_IN_DAY).toDouble(), lastDirection, RelativeDateTimeFormatter.RelativeUnit.DAYS)}"
         }
         else -> {
-            // "Not opened"
-            stringResource(id = R.string.apps_tracked_app_last_opened_default)
+            // "Last opened 5/12/2023"
+            "$prefix ${DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(lastOpenedDate)}"
         }
     }
 
